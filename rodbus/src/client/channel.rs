@@ -9,6 +9,7 @@ use crate::{error::*, ReadDeviceRequest, DeviceInfo};
 use crate::types::{AddressRange, BitIterator, Indexed, RegisterIterator, UnitId};
 use crate::DecodeLevel;
 
+use super::requests::mask_write_register::MaskWriteRegister;
 use super::requests::read_device_identification::ReadDevice;
 
 /// Async channel used to make requests
@@ -248,6 +249,11 @@ impl Channel {
         );
         self.tx.send(request).await?;
         rx.await?
+    }
+
+    /// Set or Clear individual bits in the specified register.
+    pub async fn mask_write_register(&mut self, param: RequestParam, request: Indexed<MaskWriteRegister>) -> Result<Indexed<MaskWriteRegister>, RequestError> {
+        todo!()
     }
 
     /// Dynamically change the protocol decoding level of the channel
