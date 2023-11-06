@@ -70,6 +70,7 @@ impl<'a> Request<'a> {
             Request::WriteSingleRegister(_) => FunctionCode::WriteSingleRegister,
             Request::WriteMultipleCoils(_) => FunctionCode::WriteMultipleCoils,
             Request::WriteMultipleRegisters(_) => FunctionCode::WriteMultipleRegisters,
+            Request::MaskWriteRegister(_) => FunctionCode::MaskWriteRegister,
         }
     }
 
