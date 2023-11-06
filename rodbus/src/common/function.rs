@@ -56,6 +56,9 @@ impl Display for FunctionCode {
             FunctionCode::WriteMultipleRegisters => {
                 write!(f, "WRITE MULTIPLE REGISTERS ({:#04X})", self.get_value())
             }
+            FunctionCode::MaskWriteRegister => {
+                write!(f, "MASK WRITE REGISTER ({:#04X})", self.get_value())
+            }
         }
     }
 }
