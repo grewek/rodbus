@@ -10,6 +10,7 @@ mod constants {
     pub(crate) const WRITE_SINGLE_REGISTER: u8 = 6;
     pub(crate) const WRITE_MULTIPLE_COILS: u8 = 15;
     pub(crate) const WRITE_MULTIPLE_REGISTERS: u8 = 16;
+    pub(crate) const MASK_WRITE_REGISTER: u8 = 22;
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
