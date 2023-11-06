@@ -100,6 +100,7 @@ impl RtuParser {
                 FunctionCode::WriteSingleRegister => LengthMode::Fixed(4),
                 FunctionCode::WriteMultipleCoils => LengthMode::Fixed(4),
                 FunctionCode::WriteMultipleRegisters => LengthMode::Fixed(4),
+                FunctionCode::MaskWriteRegister => todo!(),
             },
         }
     }
