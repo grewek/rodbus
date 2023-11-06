@@ -170,7 +170,7 @@ impl RequestDetails {
             RequestDetails::WriteMultipleRegisters(x) => {
                 x.handle_response(cursor, function, decode)
             },
-            RequestDetails::MaskWriteRegister(_) => todo!(),
+            RequestDetails::MaskWriteRegister(x) => x.handle_response(cursor, function, decode),
             RequestDetails::ReadDeviceIdentification(x) => x.handle_response(cursor, function, decode),
         }
     }
