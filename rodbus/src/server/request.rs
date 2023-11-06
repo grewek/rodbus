@@ -155,6 +155,7 @@ impl<'a> Request<'a> {
                     .map(|_| items.range);
                 write_result(function, header, writer, result, level)
             }
+            Request::MaskWriteRegister(_) => todo!(),
         }
     }
 
