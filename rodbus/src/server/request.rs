@@ -53,6 +53,7 @@ impl<'a> BroadcastRequest<'a> {
             BroadcastRequest::WriteMultipleRegisters(x) => {
                 let _ = handler.write_multiple_registers(*x);
             }
+            BroadcastRequest::MaskWriteRegister(_) => todo!(),
         }
     }
 }
