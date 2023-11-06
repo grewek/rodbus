@@ -1,6 +1,7 @@
 #[derive(Debug,PartialEq)]
-pub(crate) struct MaskWriteRegister {
-    
+pub struct MaskWriteRegister {
+    and_mask: u16,
+    or_mask: u16,
 }
 
 impl std::fmt::Display for MaskWriteRegister {
