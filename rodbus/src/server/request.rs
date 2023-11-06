@@ -1,3 +1,4 @@
+use crate::client::requests::mask_write_register::MaskWriteRegister;
 use crate::common::frame::{FrameHeader, FrameWriter, FunctionField};
 use crate::common::function::FunctionCode;
 use crate::common::traits::{Loggable, Parse, Serialize};
@@ -22,6 +23,7 @@ pub(crate) enum Request<'a> {
     WriteSingleRegister(Indexed<u16>),
     WriteMultipleCoils(WriteCoils<'a>),
     WriteMultipleRegisters(WriteRegisters<'a>),
+    MaskWriteRegister(MaskWriteRegister)
 }
 
 /// All requests that support broadcast
