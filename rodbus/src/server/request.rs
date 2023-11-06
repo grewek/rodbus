@@ -277,6 +277,7 @@ impl std::fmt::Display for RequestDisplay<'_, '_> {
                         RegisterIteratorDisplay::new(self.level, items.iterator)
                     )?;
                 }
+                Request::MaskWriteRegister(_) => todo!(),
             }
         }
 
