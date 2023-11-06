@@ -1,3 +1,4 @@
+use crate::client::requests::mask_write_register::MaskWriteRegister;
 use crate::decode::AppDecodeLevel;
 use crate::error::{AduParseError, InvalidRange};
 
@@ -596,6 +597,12 @@ impl std::fmt::Display for Indexed<bool> {
 impl std::fmt::Display for Indexed<u16> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "idx: {:#06X} value: {:#06X}", self.index, self.value)
+    }
+}
+
+impl std::fmt::Display for Indexed<MaskWriteRegister> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
     }
 }
 
