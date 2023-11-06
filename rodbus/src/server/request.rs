@@ -34,6 +34,7 @@ pub(crate) enum BroadcastRequest<'a> {
     WriteSingleRegister(Indexed<u16>),
     WriteMultipleCoils(WriteCoils<'a>),
     WriteMultipleRegisters(WriteRegisters<'a>),
+    MaskWriteRegister(MaskWriteRegister),
 }
 
 impl<'a> BroadcastRequest<'a> {
