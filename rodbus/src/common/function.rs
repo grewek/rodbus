@@ -83,6 +83,7 @@ impl FunctionCode {
             constants::WRITE_SINGLE_REGISTER => Some(FunctionCode::WriteSingleRegister),
             constants::WRITE_MULTIPLE_COILS => Some(FunctionCode::WriteMultipleCoils),
             constants::WRITE_MULTIPLE_REGISTERS => Some(FunctionCode::WriteMultipleRegisters),
+            constants::MASK_WRITE_REGISTER => Some(FunctionCode::MaskWriteRegister),
             _ => None,
         }
     }
