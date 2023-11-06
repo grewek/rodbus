@@ -47,7 +47,7 @@ pub(crate) enum RequestDetails {
     WriteSingleRegister(SingleWrite<Indexed<u16>>),
     WriteMultipleCoils(MultipleWriteRequest<bool>),
     WriteMultipleRegisters(MultipleWriteRequest<u16>),
-    WriteMaskRegister(SingleWrite<Indexed<MaskWriteRegister>>),
+    MaskWriteRegister(SingleWrite<Indexed<MaskWriteRegister>>),
     ReadDeviceIdentification(ReadDevice),
 }
 
@@ -133,7 +133,7 @@ impl RequestDetails {
             RequestDetails::WriteSingleRegister(_) => FunctionCode::WriteSingleRegister,
             RequestDetails::WriteMultipleCoils(_) => FunctionCode::WriteMultipleCoils,
             RequestDetails::WriteMultipleRegisters(_) => FunctionCode::WriteMultipleRegisters,
-            RequestDetails::WriteMaskRegister(_) => todo!(),
+            RequestDetails::MaskWriteRegister(_) => todo!(),
             RequestDetails::ReadDeviceIdentification(_) => FunctionCode::ReadDeviceIdentification,
         }
     }
@@ -148,7 +148,7 @@ impl RequestDetails {
             RequestDetails::WriteSingleRegister(x) => x.failure(err),
             RequestDetails::WriteMultipleCoils(x) => x.failure(err),
             RequestDetails::WriteMultipleRegisters(x) => x.failure(err),
-            RequestDetails::WriteMaskRegister(_) => todo!(),
+            RequestDetails::MaskWriteRegister(_) => todo!(),
             RequestDetails::ReadDeviceIdentification(x) => x.failure(err),
         }
     }
@@ -170,7 +170,7 @@ impl RequestDetails {
             RequestDetails::WriteMultipleRegisters(x) => {
                 x.handle_response(cursor, function, decode)
             },
-            RequestDetails::WriteMaskRegister(_) => todo!(),
+            RequestDetails::MaskWriteRegister(_) => todo!(),
             RequestDetails::ReadDeviceIdentification(x) => x.handle_response(cursor, function, decode),
         }
     }
@@ -187,7 +187,7 @@ impl Serialize for RequestDetails {
             RequestDetails::WriteSingleRegister(x) => x.serialize(cursor),
             RequestDetails::WriteMultipleCoils(x) => x.serialize(cursor),
             RequestDetails::WriteMultipleRegisters(x) => x.serialize(cursor),
-            RequestDetails::WriteMaskRegister(_) => todo!(),
+            RequestDetails::MaskWriteRegister(_) => todo!(),
             RequestDetails::ReadDeviceIdentification(x) => x.serialize(cursor),
         }
     }
@@ -253,7 +253,7 @@ impl std::fmt::Display for RequestDetailsDisplay<'_> {
                         }
                     }
                 }
-                RequestDetails::WriteMaskRegister(_) => todo!(),
+                RequestDetails::MaskWriteRegister(_) => todo!(),
                 RequestDetails::ReadDeviceIdentification(details) => {
                     write!(f, "{}", details.request)?;
                 },
