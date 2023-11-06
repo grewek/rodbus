@@ -253,7 +253,12 @@ impl Channel {
 
     /// Set or Clear individual bits in the specified register.
     pub async fn mask_write_register(&mut self, param: RequestParam, request: Indexed<MaskWriteRegister>) -> Result<Indexed<MaskWriteRegister>, RequestError> {
-        todo!()
+        let (tx, rx) = tokio::sync::oneshot::channel::<Result<Indexed<MaskWriteRegister>, RequestError>>();
+
+        let request = wrap(param, RequestDetails::MaskWriteRegister(SingleWrite::new(request, Promise::channel(tx))));
+
+        self.tx.send(request).await?;
+        rx.await?
     }
 
     /// Dynamically change the protocol decoding level of the channel
