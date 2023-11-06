@@ -133,7 +133,7 @@ impl RequestDetails {
             RequestDetails::WriteSingleRegister(_) => FunctionCode::WriteSingleRegister,
             RequestDetails::WriteMultipleCoils(_) => FunctionCode::WriteMultipleCoils,
             RequestDetails::WriteMultipleRegisters(_) => FunctionCode::WriteMultipleRegisters,
-            RequestDetails::MaskWriteRegister(_) => todo!(),
+            RequestDetails::MaskWriteRegister(_) => FunctionCode::MaskWriteRegister,
             RequestDetails::ReadDeviceIdentification(_) => FunctionCode::ReadDeviceIdentification,
         }
     }
