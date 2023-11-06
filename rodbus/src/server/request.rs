@@ -213,6 +213,7 @@ impl<'a> Request<'a> {
                     RegisterIterator::parse_all(range, cursor)?,
                 )))
             }
+            FunctionCode::MaskWriteRegister => todo!(),
         }
     }
 }
