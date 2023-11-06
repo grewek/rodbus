@@ -187,7 +187,7 @@ impl Serialize for RequestDetails {
             RequestDetails::WriteSingleRegister(x) => x.serialize(cursor),
             RequestDetails::WriteMultipleCoils(x) => x.serialize(cursor),
             RequestDetails::WriteMultipleRegisters(x) => x.serialize(cursor),
-            RequestDetails::MaskWriteRegister(_) => todo!(),
+            RequestDetails::MaskWriteRegister(x) => x.serialize(cursor),
             RequestDetails::ReadDeviceIdentification(x) => x.serialize(cursor),
         }
     }
