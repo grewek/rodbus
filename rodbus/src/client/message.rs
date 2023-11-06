@@ -148,7 +148,7 @@ impl RequestDetails {
             RequestDetails::WriteSingleRegister(x) => x.failure(err),
             RequestDetails::WriteMultipleCoils(x) => x.failure(err),
             RequestDetails::WriteMultipleRegisters(x) => x.failure(err),
-            RequestDetails::MaskWriteRegister(_) => todo!(),
+            RequestDetails::MaskWriteRegister(x) => x.failure(err),
             RequestDetails::ReadDeviceIdentification(x) => x.failure(err),
         }
     }
