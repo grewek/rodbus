@@ -25,6 +25,7 @@ pub(crate) enum FunctionCode {
     WriteSingleRegister = constants::WRITE_SINGLE_REGISTER,
     WriteMultipleCoils = constants::WRITE_MULTIPLE_COILS,
     WriteMultipleRegisters = constants::WRITE_MULTIPLE_REGISTERS,
+    MaskWriteRegister = constants::MASK_WRITE_REGISTER,
 }
 
 impl Display for FunctionCode {
