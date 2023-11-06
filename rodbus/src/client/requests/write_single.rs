@@ -9,6 +9,8 @@ use crate::types::{coil_from_u16, coil_to_u16, Indexed};
 
 use scursor::{ReadCursor, WriteCursor};
 
+use super::mask_write_register::MaskWriteRegister;
+
 pub(crate) trait SingleWriteOperation: Sized + PartialEq {
     fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError>;
     fn parse(cursor: &mut ReadCursor) -> Result<Self, RequestError>;
@@ -90,5 +92,15 @@ impl SingleWriteOperation for Indexed<u16> {
 
     fn parse(cursor: &mut ReadCursor) -> Result<Self, RequestError> {
         Ok(Indexed::new(cursor.read_u16_be()?, cursor.read_u16_be()?))
+    }
+}
+
+impl SingleWriteOperation for Indexed<MaskWriteRegister> {
+    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+        todo!()
+    }
+
+    fn parse(cursor: &mut ReadCursor) -> Result<Self, RequestError> {
+        todo!()
     }
 }
