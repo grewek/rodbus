@@ -253,7 +253,9 @@ impl std::fmt::Display for RequestDetailsDisplay<'_> {
                         }
                     }
                 }
-                RequestDetails::MaskWriteRegister(_) => todo!(),
+                RequestDetails::MaskWriteRegister(details) => {
+                    write!(f, "{}", details.request)?;
+                },
                 RequestDetails::ReadDeviceIdentification(details) => {
                     write!(f, "{}", details.request)?;
                 },
