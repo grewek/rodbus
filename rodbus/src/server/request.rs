@@ -85,6 +85,7 @@ impl<'a> Request<'a> {
             Request::WriteSingleRegister(x) => Some(BroadcastRequest::WriteSingleRegister(x)),
             Request::WriteMultipleCoils(x) => Some(BroadcastRequest::WriteMultipleCoils(x)),
             Request::WriteMultipleRegisters(x) => Some(BroadcastRequest::WriteMultipleRegisters(x)),
+            Request::MaskWriteRegister(_) => todo!(),
         }
     }
 
