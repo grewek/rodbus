@@ -1,9 +1,11 @@
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
+use crate::client::requests::mask_write_register::MaskWriteRegister;
 use crate::exception::ExceptionCode;
 use crate::server::{WriteCoils, WriteRegisters};
 use crate::types::*;
+
 
 /// Trait implemented by the user to process requests received from the client
 ///
@@ -65,6 +67,10 @@ pub trait RequestHandler: Send + 'static {
 
     /// Write multiple registers
     fn write_multiple_registers(&mut self, _values: WriteRegisters) -> Result<(), ExceptionCode> {
+        Err(ExceptionCode::IllegalFunction)
+    }
+
+    fn mask_write_register(&mut self, values: MaskWriteRegister) -> Result<(), ExceptionCode> {
         Err(ExceptionCode::IllegalFunction)
     }
 }
@@ -236,6 +242,10 @@ pub trait AuthorizationHandler: Send + Sync + 'static {
     fn read_device_info(&self, _unit_id: UnitId, _role: &str, _mei_code: MeiCode, _read_dev_id: ReadDeviceCode, _object_id: Option<u8>) -> Authorization {
         Authorization::Allow
     }
+
+    fn mask_write_register(&self, _unit_id: UnitId, _idx: u16, role: &str) -> Authorization {
+        Authorization::Deny
+    }
 }
 
 /// Read-only authorization handler that blindly accepts
@@ -317,6 +327,10 @@ impl AuthorizationHandler for ReadOnlyAuthorizationHandler {
 
     /// Authorize Read Device Info request
     fn read_device_info(&self, _unit_id: UnitId, _role: &str, _mei_code: MeiCode, _read_dev_id: ReadDeviceCode, _object_id: Option<u8>) -> Authorization {
+        Authorization::Allow
+    }
+
+    fn mask_write_register(&self, _unit_id: UnitId, _idx: u16, role: &str) -> Authorization {
         Authorization::Allow
     }
 
