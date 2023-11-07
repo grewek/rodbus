@@ -70,7 +70,8 @@ pub trait RequestHandler: Send + 'static {
         Err(ExceptionCode::IllegalFunction)
     }
 
-    fn mask_write_register(&mut self, values: MaskWriteRegister) -> Result<(), ExceptionCode> {
+    /// Mask Write Register
+    fn mask_write_register(&mut self, _values: MaskWriteRegister) -> Result<(), ExceptionCode> {
         Err(ExceptionCode::IllegalFunction)
     }
 }
@@ -243,6 +244,7 @@ pub trait AuthorizationHandler: Send + Sync + 'static {
         Authorization::Allow
     }
 
+    /// Authorize a Mask Write Register Request
     fn mask_write_register(&self, _unit_id: UnitId, _idx: u16, role: &str) -> Authorization {
         Authorization::Deny
     }
