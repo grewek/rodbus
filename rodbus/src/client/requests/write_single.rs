@@ -11,6 +11,7 @@ use scursor::{ReadCursor, WriteCursor};
 
 use super::mask_write_register::MaskWriteRegister;
 
+
 pub(crate) trait SingleWriteOperation: Sized + PartialEq {
     fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError>;
     fn parse(cursor: &mut ReadCursor) -> Result<Self, RequestError>;
@@ -97,7 +98,10 @@ impl SingleWriteOperation for Indexed<u16> {
 
 impl SingleWriteOperation for Indexed<MaskWriteRegister> {
     fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
-        todo!()
+        cursor.write_u16_be(self.index)?;
+        cursor.write_u16_be(self.value.and_mask)?;
+        cursor.write_u16_be(self.value.or_mask)?;
+        Ok(())
     }
 
     fn parse(cursor: &mut ReadCursor) -> Result<Self, RequestError> {
