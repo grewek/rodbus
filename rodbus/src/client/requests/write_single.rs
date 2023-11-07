@@ -105,6 +105,10 @@ impl SingleWriteOperation for Indexed<MaskWriteRegister> {
     }
 
     fn parse(cursor: &mut ReadCursor) -> Result<Self, RequestError> {
-        todo!()
+        let index = cursor.read_u16_be()?;
+        let and_mask = cursor.read_u16_be()?;
+        let or_mask = cursor.read_u16_be()?;
+
+        Ok(Indexed { index: index, value: MaskWriteRegister { and_mask: and_mask, or_mask: or_mask } })
     }
 }
