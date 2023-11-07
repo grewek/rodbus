@@ -12,6 +12,6 @@ pub struct MaskWriteRegister {
 
 impl std::fmt::Display for MaskWriteRegister {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(f, "AND_MASK: {} OR_MASK: {}", self.and_mask, self.or_mask)
     }
 }
