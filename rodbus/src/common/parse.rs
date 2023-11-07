@@ -1,3 +1,4 @@
+use crate::client::requests::mask_write_register::MaskWriteRegister;
 use crate::common::traits::Parse;
 use crate::{error::*, ReadDeviceRequest, ReadDeviceCode, ExceptionCode, MeiCode};
 use crate::types::{coil_from_u16, AddressRange, Indexed};
@@ -25,6 +26,15 @@ impl Parse for Indexed<bool> {
 impl Parse for Indexed<u16> {
     fn parse(cursor: &mut ReadCursor) -> Result<Self, RequestError> {
         Ok(Indexed::new(cursor.read_u16_be()?, cursor.read_u16_be()?))
+    }
+}
+
+impl Parse for Indexed<MaskWriteRegister> {
+    fn parse(cursor: &mut ReadCursor) -> Result<Self, RequestError> {
+        let reference_address = cursor.read_u16_be()?;
+        let and_mask = cursor.read_u16_be()?;
+        let or_mask = cursor.read_u16_be()?;
+        Ok(Indexed::new(reference_address, MaskWriteRegister { and_mask: and_mask, or_mask: or_mask }))
     }
 }
 
