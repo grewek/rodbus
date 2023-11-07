@@ -23,7 +23,7 @@ pub(crate) enum Request<'a> {
     WriteSingleRegister(Indexed<u16>),
     WriteMultipleCoils(WriteCoils<'a>),
     WriteMultipleRegisters(WriteRegisters<'a>),
-    MaskWriteRegister(MaskWriteRegister)
+    MaskWriteRegister(Indexed<MaskWriteRegister>)
 }
 
 /// All requests that support broadcast
@@ -221,7 +221,11 @@ impl<'a> Request<'a> {
                     RegisterIterator::parse_all(range, cursor)?,
                 )))
             }
-            FunctionCode::MaskWriteRegister => todo!(),
+            FunctionCode::MaskWriteRegister => {
+                let x = Request::MaskWriteRegister(Indexed::<MaskWriteRegister>::parse(cursor)?);
+                cursor.expect_empty()?;
+                Ok(x)
+            }
         }
     }
 }
@@ -278,7 +282,9 @@ impl std::fmt::Display for RequestDisplay<'_, '_> {
                         RegisterIteratorDisplay::new(self.level, items.iterator)
                     )?;
                 }
-                Request::MaskWriteRegister(_) => todo!(),
+                Request::MaskWriteRegister(request) => {
+                    write!(f, " {}", {request})?;
+                },
             }
         }
 
