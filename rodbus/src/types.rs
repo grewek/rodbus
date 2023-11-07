@@ -602,7 +602,7 @@ impl std::fmt::Display for Indexed<u16> {
 
 impl std::fmt::Display for Indexed<MaskWriteRegister> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(f, "idx: {:#06X} value: {}", self.index, self.value)
     }
 }
 
