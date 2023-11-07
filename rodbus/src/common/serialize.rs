@@ -4,6 +4,7 @@ use std::ops::Range;
 use crate::DeviceInfo;
 use crate::ReadDeviceRequest;
 use crate::client::WriteMultiple;
+use crate::client::requests::mask_write_register::MaskWriteRegister;
 use crate::common::frame::constants::MAX_ADU_LENGTH;
 use crate::common::traits::Loggable;
 use crate::common::traits::Parse;
@@ -220,6 +221,17 @@ where
         }
 
         Ok(())
+    }
+}
+
+impl Loggable for MaskWriteRegister {
+    fn log(
+        &self,
+        bytes: &[u8],
+        level: crate::AppDecodeLevel,
+        f: &mut std::fmt::Formatter,
+    ) -> std::fmt::Result {
+        todo!()
     }
 }
 
