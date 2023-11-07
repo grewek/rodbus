@@ -417,6 +417,12 @@ impl Serialize for &str {
     }
 }
 
+impl Serialize for MaskWriteRegister {
+    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+        todo!()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
