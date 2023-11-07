@@ -34,7 +34,6 @@ pub(crate) enum BroadcastRequest<'a> {
     WriteSingleRegister(Indexed<u16>),
     WriteMultipleCoils(WriteCoils<'a>),
     WriteMultipleRegisters(WriteRegisters<'a>),
-    MaskWriteRegister(MaskWriteRegister),
 }
 
 impl<'a> BroadcastRequest<'a> {
@@ -53,7 +52,6 @@ impl<'a> BroadcastRequest<'a> {
             BroadcastRequest::WriteMultipleRegisters(x) => {
                 let _ = handler.write_multiple_registers(*x);
             }
-            BroadcastRequest::MaskWriteRegister(_) => todo!(),
         }
     }
 }
@@ -85,7 +83,7 @@ impl<'a> Request<'a> {
             Request::WriteSingleRegister(x) => Some(BroadcastRequest::WriteSingleRegister(x)),
             Request::WriteMultipleCoils(x) => Some(BroadcastRequest::WriteMultipleCoils(x)),
             Request::WriteMultipleRegisters(x) => Some(BroadcastRequest::WriteMultipleRegisters(x)),
-            Request::MaskWriteRegister(_) => todo!(),
+            Request::MaskWriteRegister(_) => None,
         }
     }
 
@@ -445,6 +443,6 @@ mod tests {
             assert_eq!(device_info.mei_code, MeiCode::ReadDeviceId);
             assert_eq!(device_info.dev_id, ReadDeviceCode::BasicStreaming);
             assert_eq!(device_info.obj_id, Some(0x00));
-        }        
+        }
     }
 }
