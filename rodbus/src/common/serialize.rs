@@ -224,7 +224,7 @@ where
     }
 }
 
-impl Loggable for MaskWriteRegister {
+impl Loggable for Indexed<MaskWriteRegister> {
     fn log(
         &self,
         bytes: &[u8],
@@ -417,9 +417,13 @@ impl Serialize for &str {
     }
 }
 
-impl Serialize for MaskWriteRegister {
+impl Serialize for Indexed<MaskWriteRegister> {
     fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
-        todo!()
+        cursor.write_u16_be(self.index)?;
+        cursor.write_u16_be(self.value.and_mask)?;
+        cursor.write_u16_be(self.value.or_mask)?;
+
+        Ok(())
     }
 }
 
