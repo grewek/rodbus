@@ -12,6 +12,7 @@ pub(crate) mod task;
 pub use crate::client::channel::*;
 pub use crate::client::listener::*;
 pub use crate::client::requests::write_multiple::WriteMultiple;
+pub use crate::client::requests::mask_write_register::MaskWriteRegister;
 pub use crate::retry::*;
 
 #[cfg(feature = "tls")]
