@@ -153,8 +153,8 @@ impl<'a> Request<'a> {
                     .map(|_| items.range);
                 write_result(function, header, writer, result, level)
             }
-            Request::MaskWriteRegister(mask_params) => {
-                let result = handler.mask_write_register(*mask_params).map(|_| *mask_params);
+            Request::MaskWriteRegister(request) => {
+                let result = handler.mask_write_register(*request).map(|_| *request);
                 write_result(function, header, writer, result, level)
             }
         }
