@@ -125,3 +125,20 @@ mod read_device_info {
         assert_eq!(result, Ok(ReadDeviceRequest { mei_code: MeiCode::ReadDeviceId, dev_id: crate::ReadDeviceCode::BasicStreaming, obj_id:  Some(0x00)}))
     }
 }
+
+#[cfg(test)]
+mod mask_write_register {
+
+    use crate::common::traits::Parse;
+    use scursor::ReadCursor;
+
+    use crate::{client::MaskWriteRegister, Indexed};
+
+    #[test]
+    fn parse_succeeds_for_valid_indexed_mask_write_register() {
+        let mut cursor = ReadCursor::new(&[0x00, 0xBE, 0xCA,0x00,0x00,0xFE]);
+
+        let result = Indexed::<MaskWriteRegister>::parse(&mut cursor);
+        assert_eq!(result, Ok(Indexed::new(0xBE, MaskWriteRegister { and_mask: 0xCA00, or_mask: 0x00FE })));
+    }
+}
