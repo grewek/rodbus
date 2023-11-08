@@ -1,9 +1,5 @@
-use scursor::{WriteCursor, ReadCursor};
 
-use crate::{RequestError, Indexed};
-
-use super::write_single::SingleWriteOperation;
-
+/// Contains a and, or mask for the MaskWriteRegister Function Code.
 #[derive(Debug,PartialEq,Copy,Clone)]
 pub struct MaskWriteRegister {
     pub(crate) and_mask: u16,
@@ -12,6 +8,6 @@ pub struct MaskWriteRegister {
 
 impl std::fmt::Display for MaskWriteRegister {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "AND_MASK: {} OR_MASK: {}", self.and_mask, self.or_mask)
+        write!(f, "AND_MASK: {:#016b} OR_MASK: {:#016b}", self.and_mask, self.or_mask)
     }
 }
