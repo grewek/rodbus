@@ -1,5 +1,6 @@
 use std::process::exit;
 
+use rodbus::client::MaskWriteRegister;
 use tokio_stream::StreamExt;
 use tokio_util::codec::{FramedRead, LinesCodec};
 
