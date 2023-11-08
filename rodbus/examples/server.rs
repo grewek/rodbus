@@ -134,6 +134,20 @@ impl RequestHandler for SimpleHandler {
         result
     }
 
+    fn mask_write_register(&mut self, value: Indexed<MaskWriteRegister>) -> Result<(), ExceptionCode> {
+        tracing::info!("mask write registers INDEX: {}, MASKS: {}", value.index, value.value);
+
+        let mut result = Ok(());
+        if let Some(reg_value) = self.holding_registers.get_mut(value.index as usize) {
+            *reg_value = value.value.mask_value(*reg_value);
+            println!("value after modifying it: {value}");
+        } else {
+            result = Err(ExceptionCode::IllegalDataAddress);
+        }
+
+        result
+    }
+
     fn read_device_info(&self, mei_code: MeiCode, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Result<DeviceInfo, ExceptionCode> {
         let mut device_info = DeviceInfo::new(mei_code, read_dev_id, DeviceConformityLevel::ExtendedIdentificationIndividual, 0);
         let response_data = match read_dev_id {
