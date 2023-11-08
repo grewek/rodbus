@@ -469,4 +469,16 @@ mod tests {
         let expected: [u8; 14] = [0x0D,0x48,0x65,0x6C,0x6C,0x6F,0x2C,0x20,0x57,0x6F,0x72,0x6C,0x64,0x21];
         assert_eq!(buffer, expected);
     }
+
+    #[test]
+    fn serialize_mask_write() {
+        let mut buffer = [0u8; 6];
+        let mut cursor = WriteCursor::new(&mut buffer);
+
+        let mask_write_reg = Indexed::new(0xBE, MaskWriteRegister::new(0x00FE, 0xCA00));
+        mask_write_reg.serialize(&mut cursor).unwrap();
+
+        let expected: [u8; 6] = [0x00, 0xBE, 0x00, 0xFE, 0xCA, 0x00];
+        assert_eq!(buffer, expected);
+    }
 }
