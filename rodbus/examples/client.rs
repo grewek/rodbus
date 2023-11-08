@@ -291,7 +291,7 @@ async fn run_channel(mut channel: Channel) -> Result<(), Box<dyn std::error::Err
                 let result = channel
                     .write_multiple_registers(
                         params,
-                        WriteMultiple::from(0, vec![0xCA, 0xFE]).unwrap(),
+                        WriteMultiple::from(0, vec![0xCA, 0xFE,0x12,0x00]).unwrap(),
                     )
                     .await;
                 print_write_result(result);
