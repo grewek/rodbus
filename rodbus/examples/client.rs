@@ -297,6 +297,11 @@ async fn run_channel(mut channel: Channel) -> Result<(), Box<dyn std::error::Err
                 print_write_result(result);
                 // ANCHOR_END: write_multiple_registers
             }
+            "wmar" => {
+                let result = channel.mask_write_register(params, 
+                    Indexed::new(2, MaskWriteRegister::new(0x00F2, 0x0025))).await;
+                print_write_result(result);
+            }
             _ => println!("unknown command"),
         }
     }
