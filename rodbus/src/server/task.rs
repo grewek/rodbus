@@ -271,7 +271,7 @@ impl AuthorizationType {
             Request::WriteMultipleRegisters(x) => {
                 handler.write_multiple_registers(unit_id, x.range, role)
             }
-            Request::MaskWriteRegister(x) => handler.mask_write_register(unit_id, x.index, x.value.and_mask, x.value.or_mask, role),
+            Request::MaskWriteRegister(x) => handler.mask_write_register(unit_id, *x, role),
         }
     }
 
