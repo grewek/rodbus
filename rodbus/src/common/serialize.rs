@@ -231,7 +231,7 @@ impl Loggable for Indexed<MaskWriteRegister> {
         level: crate::AppDecodeLevel,
         f: &mut std::fmt::Formatter,
     ) -> std::fmt::Result {
-        todo!()
+        write!(f, "INDEX: {}", self.index)
     }
 }
 
