@@ -71,7 +71,7 @@ pub trait RequestHandler: Send + 'static {
     }
 
     /// Mask Write Register
-    fn mask_write_register(&mut self, _values: Indexed<MaskWriteRegister>) -> Result<(), ExceptionCode> {
+    fn mask_write_register(&mut self, _value: Indexed<MaskWriteRegister>) -> Result<(), ExceptionCode> {
         Err(ExceptionCode::IllegalFunction)
     }
 }
@@ -245,7 +245,7 @@ pub trait AuthorizationHandler: Send + Sync + 'static {
     }
 
     /// Authorize a Mask Write Register Request
-    fn mask_write_register(&self, _unit_id: UnitId, _idx: u16, and_mask: u16, or_mask: u16, role: &str) -> Authorization {
+    fn mask_write_register(&self, _unit_id: UnitId, _value: Indexed<MaskWriteRegister>, _role: &str) -> Authorization {
         Authorization::Deny
     }
 }
@@ -332,7 +332,7 @@ impl AuthorizationHandler for ReadOnlyAuthorizationHandler {
         Authorization::Allow
     }
 
-    fn mask_write_register(&self, _unit_id: UnitId, _idx: u16, _and_mask: u16, _or_mask: u16, _role: &str) -> Authorization {
+    fn mask_write_register(&self, _unit_id: UnitId, _value: Indexed<MaskWriteRegister>, _role: &str) -> Authorization {
         Authorization::Allow
     }
 
