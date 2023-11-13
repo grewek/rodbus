@@ -88,7 +88,7 @@ impl RtuParser {
                 FunctionCode::WriteSingleRegister => LengthMode::Fixed(4),
                 FunctionCode::WriteMultipleCoils => LengthMode::Offset(5),
                 FunctionCode::WriteMultipleRegisters => LengthMode::Offset(5),
-                FunctionCode::MaskWriteRegister => todo!(),
+                FunctionCode::MaskWriteRegister => LengthMode::Fixed(6),
             },
             ParserType::Response => match function_code {
                 FunctionCode::ReadCoils => LengthMode::Offset(1),
@@ -100,7 +100,7 @@ impl RtuParser {
                 FunctionCode::WriteSingleRegister => LengthMode::Fixed(4),
                 FunctionCode::WriteMultipleCoils => LengthMode::Fixed(4),
                 FunctionCode::WriteMultipleRegisters => LengthMode::Fixed(4),
-                FunctionCode::MaskWriteRegister => todo!(),
+                FunctionCode::MaskWriteRegister => LengthMode::Fixed(6),
             },
         }
     }
@@ -417,6 +417,24 @@ mod tests {
         0x46, 0x16, // crc
     ];
 
+    const MASK_WRITE_REGISTER_REQUEST: &[u8] = &[
+        UNIT_ID, //unit id
+        0x16,    //function code
+        0x00, 0x04, //Reference Address
+        0x00, 0xF2, //And Mask
+        0x00, 0x25, //Or Mask
+        0x24, 0x45, //CRC value calculated with (crccalc.com CRC-16/MODBUS)
+    ];
+
+    const MASK_WRITE_REGISTER_RESPONSE: &[u8] = &[
+        UNIT_ID, //unit id
+        0x16,    //function code
+        0x00, 0x04, //Reference Address
+        0x00, 0xF2, //And Mask
+        0x00, 0x25, //Or Mask
+        0x24, 0x45, //CRC value calculated with (crccalc.com CRC-16/MODBUS)
+    ];
+
     /*const READ_DEVICE_INFO_REQUEST: &[u8] = &[
         UNIT_ID,        //unit id
         0x2B,           //function code
@@ -474,6 +492,10 @@ mod tests {
             FunctionCode::WriteMultipleRegisters,
             WRITE_MULTIPLE_REGISTERS_REQUEST,
         ),
+        (
+            FunctionCode::MaskWriteRegister,
+            MASK_WRITE_REGISTER_REQUEST,
+        ),
         /*(
             FunctionCode::ReadDeviceIdentification,
             READ_DEVICE_INFO_REQUEST,
@@ -506,6 +528,10 @@ mod tests {
         (
             FunctionCode::WriteMultipleRegisters,
             WRITE_MULTIPLE_REGISTERS_RESPONSE,
+        ),
+        (
+            FunctionCode::MaskWriteRegister,
+            MASK_WRITE_REGISTER_RESPONSE,
         ),
         /*(
             FunctionCode::ReadDeviceIdentification,
