@@ -16,6 +16,12 @@ pub(crate) mod constants {
     pub(crate) const CRC_LENGTH: usize = 2;
     pub(crate) const MAX_FRAME_LENGTH: usize =
         HEADER_LENGTH + crate::common::frame::constants::MAX_ADU_LENGTH + CRC_LENGTH;
+
+    //READ_DEVICE_INFO Constants
+    pub(crate) const READ_DEVICE_INFO_MORE_FOLLOWS_OFFSET: usize = 4;
+    pub(crate) const READ_DEVICE_INFO_NEXT_OBJECT_ID_OFFSET: usize = 5;
+    pub(crate) const READ_DEVICE_INFO_NUMBER_OF_OBJECTS_OFFSET: usize = 6;
+    pub(crate) const READ_DEVICE_INFO_FIRST_OBJECT_ID: usize = 7;
 }
 
 /// precomputes the CRC table as a constant!
@@ -32,6 +38,9 @@ enum ParseState {
     Start,
     ReadFullBody(FrameDestination, usize), // unit_id, length of rest
     ReadToOffsetForLength(FrameDestination, usize), // unit_id, length to length
+    RepeatedOffsetStart(FrameDestination, usize), // unit_id, length to offset of the first object
+    // TODO(Kay): Again a explanation is necessary
+    ReadRepeatedOffset(FrameDestination, usize, usize),
 }
 
 #[derive(Clone, Copy)]
@@ -40,6 +49,8 @@ enum LengthMode {
     Fixed(usize),
     /// You need to read X more bytes. The last byte contains the number of extra bytes to read after that
     Offset(usize),
+    /// Read X more bytes to find the length of the first object. Use the read length to find the end of the message.
+    RepeatedOffsetStart(usize),
     /// Unknown function code, can't determine the size
     Unknown,
 }
@@ -94,7 +105,7 @@ impl RtuParser {
                 FunctionCode::ReadDiscreteInputs => LengthMode::Offset(1),
                 FunctionCode::ReadHoldingRegisters => LengthMode::Offset(1),
                 FunctionCode::ReadInputRegisters => LengthMode::Offset(1),
-                FunctionCode::ReadDeviceIdentification => todo!(),
+                FunctionCode::ReadDeviceIdentification => LengthMode::RepeatedOffsetStart(8),
                 FunctionCode::WriteSingleCoil => LengthMode::Fixed(4),
                 FunctionCode::WriteSingleRegister => LengthMode::Fixed(4),
                 FunctionCode::WriteMultipleCoils => LengthMode::Fixed(4),
@@ -133,6 +144,9 @@ impl RtuParser {
                     LengthMode::Offset(offset) => {
                         ParseState::ReadToOffsetForLength(destination, offset)
                     }
+                    LengthMode::RepeatedOffsetStart(offset) => {
+                        ParseState::RepeatedOffsetStart(destination, offset)
+                    }
                     LengthMode::Unknown => {
                         return Err(RequestError::BadFrame(
                             FrameParseError::UnknownFunctionCode(raw_function_code),
@@ -153,6 +167,47 @@ impl RtuParser {
                 self.state = ParseState::ReadFullBody(destination, offset + extra_bytes_to_read);
 
                 self.parse(cursor, decode_level)
+            }
+            ParseState::RepeatedOffsetStart(destination, offset) => {
+                //NOTE FC + 7 = The first Object ID Field
+                if cursor.len() < offset {
+                    return Ok(None);
+                }
+
+                let more_follows = cursor.peek_at(
+                    constants::READ_DEVICE_INFO_MORE_FOLLOWS_OFFSET)? as usize;
+
+                //NOTE: This is reading all static data from the Read Device Info Message before
+                //it's going into a more dynamic reading state. It also does some calculations to
+                //determine the amount of objects inside the current message.
+                if more_follows == 0xFF {
+                    let next_object_id = cursor.peek_at(constants::READ_DEVICE_INFO_NEXT_OBJECT_ID_OFFSET)? as usize;
+
+                    self.state = ParseState::ReadRepeatedOffset(destination, offset, next_object_id);
+                    self.parse(cursor, decode_level)
+                } else {
+                    let number_objects = cursor.peek_at(constants::READ_DEVICE_INFO_NUMBER_OF_OBJECTS_OFFSET)? as usize;
+                    let object_id = cursor.peek_at(constants::READ_DEVICE_INFO_FIRST_OBJECT_ID)? as usize;
+
+                    self.state = ParseState::ReadRepeatedOffset(destination, offset, number_objects - object_id);
+                    self.parse(cursor, decode_level)
+                }
+
+            }
+            ParseState::ReadRepeatedOffset(destination, offset, read_count) => {
+                if cursor.len() < offset + constants::FUNCTION_CODE_LENGTH  {
+                    return Ok(None);
+                }
+
+                let length = cursor.peek_at(offset)? as usize;
+
+                if (read_count - 1) > 0 {
+                    self.state = ParseState::ReadRepeatedOffset(destination, offset + length + 2, read_count - 1);
+                    self.parse(cursor, decode_level)
+                } else {
+                    self.state = ParseState::ReadFullBody(destination, offset + length);
+                    self.parse(cursor, decode_level)
+                }
             }
             ParseState::ReadFullBody(destination, length) => {
                 if constants::FUNCTION_CODE_LENGTH + length
@@ -415,7 +470,7 @@ mod tests {
         0x46, 0x16, // crc
     ];
 
-    /*const READ_DEVICE_INFO_REQUEST: &[u8] = &[
+    const READ_DEVICE_INFO_REQUEST: &[u8] = &[
         UNIT_ID,        //unit id
         0x2B,           //function code
         0x0E,           //mei type
@@ -424,13 +479,14 @@ mod tests {
         0x54, 0x71      //CRC value calculated with (crccalc.com CRC-16/MODBUS)
     ];
 
+    //Contains a response with three objects that fit snugly into one message
     const READ_DEVICE_INFO_RESPONSE: &[u8] = &[
         UNIT_ID,    //unit id
         0x2B,       //function code
         0x0E,       //mei code
         0x01,       //read dev id code
         0x01,       //conformity level
-        0x00,       //more follows
+        0x00,       //more follows (false)
         0x00,       //next object id
         0x03,       //number of objects
         0x00,       //object id
@@ -443,7 +499,41 @@ mod tests {
         0x05,       //object length
         0x56, 0x32, 0x2E, 0x31, 0x31,
         0x58, 0x61  //CRC value calculated with (crccalc.com CRC-16/MODBUS)
-    ];*/
+    ];
+
+    //Contains a response that was too big for the current request and needs to be split into two messages.
+    const READ_DEVICE_INFO_RESPONSE_SPLIT: &[u8] = &[
+        UNIT_ID,    //unit id
+        0x2B,       //function code
+        0x0E,       //mei code
+        0x01,       //read dev id code
+        0x01,       //conformity level
+        0xFF,       //more follows (true)
+        0x02,       //next object id
+        0x03,       //number of objects
+        0x00,       //object id
+        0x16,       //object length
+        0x43, 0x6F, 0x6D, 0x70, 0x61, 0x6E, 0x79, 0x20, 0x69, 0x64, 0x65, 0x6E, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6F, 0x6E, // object value (Company identification)
+        0x01,       //object id
+        0x0F,       //object length
+        0x50, 0x72, 0x6F, 0x64, 0x75, 0x63, 0x74, 0x20, 0x63, 0x6F, 0x64, 0x65, 0x20, 0x58, 0x58, //object value (Product Code XX)
+        0x05, 0xE6
+    ];
+
+    const READ_DEVICE_INFO_RESPONSE_SPLIT_PART_TWO: &[u8] = &[
+        UNIT_ID,    //unit id
+        0x2B,       //function code
+        0x0E,       //mei code
+        0x01,       //read dev id code
+        0x01,       //conformity level
+        0x00,       //more follows (false)
+        0x00,       //next object id
+        0x03,       //number of objects
+        0x02,       //object id
+        0x05,       //object length
+        0x56, 0x32, 0x2E, 0x31, 0x31, //object value (V2.11)
+        0xBF, 0x43
+    ];
 
     const ALL_REQUESTS: &[(FunctionCode, &[u8])] = &[
         (FunctionCode::ReadCoils, READ_COILS_REQUEST),
@@ -472,10 +562,10 @@ mod tests {
             FunctionCode::WriteMultipleRegisters,
             WRITE_MULTIPLE_REGISTERS_REQUEST,
         ),
-        /*(
+        (
             FunctionCode::ReadDeviceIdentification,
             READ_DEVICE_INFO_REQUEST,
-        )*/
+        ),
     ];
 
     const ALL_RESPONSES: &[(FunctionCode, &[u8])] = &[
@@ -505,10 +595,18 @@ mod tests {
             FunctionCode::WriteMultipleRegisters,
             WRITE_MULTIPLE_REGISTERS_RESPONSE,
         ),
-        /*(
+        (
             FunctionCode::ReadDeviceIdentification,
             READ_DEVICE_INFO_RESPONSE,
-        )*/
+        ),
+        (
+            FunctionCode::ReadDeviceIdentification,
+            READ_DEVICE_INFO_RESPONSE_SPLIT,
+        ),
+        (
+            FunctionCode::ReadDeviceIdentification,
+            READ_DEVICE_INFO_RESPONSE_SPLIT_PART_TWO,
+        )
     ];
 
     fn assert_can_parse_frame(mut reader: FramedReader, frame: &[u8]) {
