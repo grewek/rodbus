@@ -329,6 +329,17 @@ impl DeviceInfo {
     }
 }
 
+///Iterator over all received Info Objects from the Modbus Server
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct DeviceInfoObjectIterator; //TODO(Kay): Figure this out !
+
+impl DeviceInfoObjectIterator {
+    ///Create a new DeviceInfoObjectIterator !
+    pub fn new() -> DeviceInfoObjectIterator {
+        todo!()
+    }
+}
+
 impl std::fmt::Display for DeviceInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let next_value = if let Some(value) = self.continue_at {
@@ -658,6 +669,12 @@ impl std::fmt::Display for Indexed<bool> {
 impl std::fmt::Display for Indexed<u16> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "idx: {:#06X} value: {:#06X}", self.index, self.value)
+    }
+}
+
+impl std::fmt::Display for DeviceInfoObjectIterator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
     }
 }
 
