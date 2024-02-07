@@ -78,7 +78,7 @@ impl Handler {
         mei_code: MeiCode,
         read_dev_id: ReadDeviceCode,
         object_id: u8,
-    ) -> Result<DeviceInfo, ExceptionCode> {
+    ) -> Result<ServerDeviceInfo, ExceptionCode> {
         let data = match read_dev_id {
             ReadDeviceCode::BasicStreaming => self.read_basic_device_info()?,
             ReadDeviceCode::RegularStreaming => self.read_regular_device_info()?,
@@ -105,9 +105,9 @@ impl Handler {
         let length = Handler::message_count_from_area_slice(data) as u8;
 
         let mut device_info_response =
-            DeviceInfo::new(mei_code, read_dev_id, self.device_conformity_level, length);
+            ServerDeviceInfo::new();
 
-        device_info_response.storage = modbus_response;
+        //device_info_response.storage = modbus_response;
 
         Ok(device_info_response)
     }
@@ -140,12 +140,15 @@ impl RequestHandler for Handler {
         mei_code: MeiCode,
         read_dev_id: ReadDeviceCode,
         object_id: Option<u8>,
-    ) -> Result<DeviceInfo, ExceptionCode> {
+    ) -> Result<ServerDeviceInfo, ExceptionCode> {
         match (read_dev_id, object_id) {
             (ReadDeviceCode::BasicStreaming, None) => {
-                self.read_device_info_streaming(mei_code, read_dev_id, 0)
+                todo!()
+                //self.read_device_info_streaming(mei_code, read_dev_id, 0)
             }
-            (ReadDeviceCode::BasicStreaming, Some(value)) => {
+            _ => todo!(),
+            //TODO(Kay): Pass the above test and only then uncomment and prepare that, make it pass rinse repeat.
+            /*(ReadDeviceCode::BasicStreaming, Some(value)) => {
                 self.read_device_info_streaming(mei_code, read_dev_id, value)
             }
 
@@ -166,7 +169,7 @@ impl RequestHandler for Handler {
             (ReadDeviceCode::Specific, None) => Err(ExceptionCode::IllegalDataValue),
             (ReadDeviceCode::Specific, Some(value)) => {
                 self.read_device_info_individual(mei_code, read_dev_id, value)
-            }
+            }*/
         }
     }
 }
@@ -206,36 +209,26 @@ async fn test_read_device_info_request_response() {
         .unwrap();
     assert_eq!(
         result,
-        DeviceInfo {
-            mei_code: MeiCode::ReadDeviceId,
-            read_device_id: ReadDeviceCode::BasicStreaming,
-            conformity_level: DeviceConformityLevel::ExtendedIdentificationIndividual,
-            number_objects: 3,
-            continue_at: None,
-            storage: vec![
-                RawModbusInfoObject::new(
-                    ReadDeviceCode::BasicStreaming,
-                    0,
-                    VENDOR_NAME.len() as u8,
-                    VENDOR_NAME.as_bytes()
-                ),
-                RawModbusInfoObject::new(
-                    ReadDeviceCode::BasicStreaming,
-                    1,
-                    PRODUCT_CODE.len() as u8,
-                    PRODUCT_CODE.as_bytes()
-                ),
-                RawModbusInfoObject::new(
-                    ReadDeviceCode::BasicStreaming,
-                    2,
-                    PRODUCT_VERSION.len() as u8,
-                    PRODUCT_VERSION.as_bytes()
-                ),
-            ],
+        DeviceInfoObjectIterator {
+            /*conformity_level: DeviceConformityLevel::ExtendedIdentificationIndividual,
+            next_object_id: None,
+            object_data: &[
+                0x03,                                                                       //Number of Objects (3)
+                0x00,                                                                       //Object ID (0)
+                0x0B,                                                                       //Object Length (11)
+                0x76, 0x65, 0x6e, 0x64, 0x6f, 0x72, 0x20, 0x6e, 0x61, 0x6d, 0x65,           //Object Data ("vendor name")
+                0x01,                                                                       //Object ID (1)
+                0x0C,                                                                       //Object Length (12)
+                0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x20, 0x63, 0x6f, 0x64, 0x65,     //Object Data ("product code")
+                0x02,                                                                       //Object ID (2)
+                0x05,                                                                       //Object Length (5)
+                0x31, 0x2e, 0x33, 0x2e, 0x30                                                //Object Data ("1.3.0")
+            ]*/
         }
     );
 
-    let resulting_objects = result.finalize_and_retrieve_objects();
+    //TODO(Kay): Reshape and reactivate the rest of the test when we can solve the one above !
+    /*let resulting_objects = result.finalize_and_retrieve_objects();
 
     assert_eq!(
         resulting_objects,
@@ -577,7 +570,7 @@ async fn test_read_device_info_request_response() {
             )
             .await,
         Err(RequestError::Exception(ExceptionCode::IllegalDataAddress))
-    );
+    );*/
 }
 
 #[test]
