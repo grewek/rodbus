@@ -15,6 +15,14 @@ pub struct ServerDeviceInfo<'a> {
     pub object_data: &'a [u8],
 }
 
+
+impl<'a> ServerDeviceInfo<'_> {
+    ///TEMPORARY Create a new ServerDeviceInfoObject !
+    pub fn new() -> Self {
+        todo!()
+    }
+}
+
 /// Trait implemented by the user to process requests received from the client
 ///
 /// Implementations do **NOT** need to validate that AddressRanges do not overflow u16 as this
