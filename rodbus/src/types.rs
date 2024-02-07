@@ -4,6 +4,7 @@ use crate::error::{AduParseError, InvalidRange};
 use scursor::ReadCursor;
 
 use crate::error::RequestError;
+use crate::server::ServerDeviceInfo;
 
 /// Modbus unit identifier, just a type-safe wrapper around `u8`
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Ord, Eq)]
@@ -165,6 +166,12 @@ impl std::fmt::Display for ReadDeviceRequest {
                 0x00
             }
         )
+    }
+}
+
+impl std::fmt::Display for ServerDeviceInfo<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
     }
 }
 
