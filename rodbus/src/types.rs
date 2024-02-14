@@ -198,6 +198,23 @@ pub enum StringInfoObject {
     Other(u8),
 }
 
+impl From<u8> for StringInfoObject {
+    fn from(value: u8) -> Self {
+        match value {
+            0x00 => StringInfoObject::VendorName,
+            0x01 => StringInfoObject::ProductCode,
+            0x02 => StringInfoObject::MajorMinorRevision,
+            0x03 => StringInfoObject::VendorUrl,
+            0x04 => StringInfoObject::ProductName,
+            0x05 => StringInfoObject::ModelName,
+            0x06 => StringInfoObject::UserApplicationName,
+            0x07..=0x7F => StringInfoObject::Reserved(value),
+            0x80..=0xFF => StringInfoObject::Other(value),
+            _ => unreachable!() //NOTE(Kay): This is here to satisfy the RustRover IDE :(
+        }
+    }
+}
+
 /// Type that models information objects defined by the standard and private types
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum InfoObject {
