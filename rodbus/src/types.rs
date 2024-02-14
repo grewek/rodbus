@@ -230,7 +230,7 @@ pub enum InfoObject {
 pub enum ModbusInfoObject {
     ///Type that represents an ascii string. used for everything that comes from the basic and regular storage of the server (see modbus specification page 43 object table)
     ModbusString(u8, String),
-    ///Stores a unknown piece of binary data returned by the server. cast these into ascii strings at your own discretion. used for everything that comes from the extended storage (see modbus specification page 43 object table)
+    ///Stores an unknown piece of binary data returned by the server. cast these into ascii strings at your own discretion. used for everything that comes from the extended storage (see modbus specification page 43 object table)
     ModbusRawData(u8, Vec<u8>),
 }
 
