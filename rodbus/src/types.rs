@@ -250,7 +250,7 @@ impl From<RawModbusInfoObject> for ModbusInfoObject {
             }
         }
     }
-}
+}*/
 #[derive(Debug, Clone, PartialEq)]
 #[allow(missing_docs)]
 pub struct RawModbusInfoObject {
@@ -295,8 +295,8 @@ pub struct DeviceInfo {
     pub number_objects: u8,
     ///If the server could not fit all the information in a single response this field will be Some and contain the index of the next read. See the MODBUS specification for more details.
     pub continue_at: Option<u8>,
-    ///The actual information will be put into this vector can be empty if there was no information to read.
-    pub storage: Vec<RawModbusInfoObject>,
+    ///The actual information will be put into this iterator can be empty if there was no information to read.
+    pub storage: DeviceInfoObjectIterator,
 }
 
 impl DeviceInfo {
@@ -306,6 +306,7 @@ impl DeviceInfo {
         device_id: ReadDeviceCode,
         conformity_level: DeviceConformityLevel,
         number_objects: u8,
+        iter: DeviceInfoObjectIterator,
     ) -> Self {
         Self {
             mei_code,
@@ -313,7 +314,7 @@ impl DeviceInfo {
             conformity_level,
             number_objects,
             continue_at: None,
-            storage: vec![],
+            storage: iter,
         }
     }
 
