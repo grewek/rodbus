@@ -224,6 +224,25 @@ pub enum InfoObject {
     Other(u8, Vec<u8>),
 }
 
+impl InfoObject {
+
+    ///Create a new Info Object from a raw Object ID and a unknown data block.
+    pub fn new(id: u8, data: &[u8]) -> InfoObject {
+        let id: StringInfoObject = id.into();
+        match id {
+            StringInfoObject::VendorName | StringInfoObject::ProductCode |
+            StringInfoObject::MajorMinorRevision | StringInfoObject::VendorUrl |
+            StringInfoObject::ProductName | StringInfoObject::ModelName |
+            StringInfoObject::UserApplicationName => {
+                //TODO(Kay): We need error handling here !
+                let string_data = String::from(from_utf8(data).unwrap());
+                DefinedString(id, string_data)
+            }
+            StringInfoObject::Reserved(id) | StringInfoObject::Other(id) => InfoObject::Other(id, Vec::from(data)),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 ///Data that is returned by a modbus server can contain ascii and in some cases other types of data. This data structure converts the raw bytes into ASCII Strings
 /// if possible. In the case where the data cannot be converted into ASCII due to unknown bytes we return the raw bytes to the user.
