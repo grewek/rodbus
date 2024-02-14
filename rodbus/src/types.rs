@@ -192,6 +192,10 @@ pub enum StringInfoObject {
     ModelName,
     /// User application name
     UserApplicationName,
+    /// Reserved
+    Reserved(u8),
+    /// Private Object
+    Other(u8),
 }
 
 /// Type that models information objects defined by the standard and private types
