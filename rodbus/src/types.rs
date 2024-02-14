@@ -338,13 +338,52 @@ impl DeviceInfo {
 }
 
 ///Iterator over all received Info Objects from the Modbus Server
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct DeviceInfoObjectIterator; //TODO(Kay): Figure this out !
+#[derive(Debug, Eq, PartialEq)]
+pub struct DeviceInfoObjectIterator {
+    data: Vec<u8>,
+    next: usize,
+}
+
+impl Iterator for DeviceInfoObjectIterator {
+    type Item = InfoObject;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        //NOTE: Our Object id at the start of every Object should be continuous that might
+        //      help us, but chances are that we just hit a byte that is also one bigger
+        //      than the last valid object_id !
+
+        //NOTE: We cannot determine how many Objects are in the Raw bytes of the iterator !
+        //      therefore we need to assume that if we consumed all bytes we have reached
+        //      the end of the iterator ! Object Count can't help us either, as the Object
+        //      count in split message is still containing the count over both messages.
+
+        //FIXME(Kay): We cannot implement size_hint as we don't know the upperbounds of
+        //            the iterator :(
+
+        if self.next != self.data.len() {
+            let id = self.data[self.next];
+            self.next += 1;
+            let length = self.data[self.next];
+            self.next += 1;
+
+            let end = self.next + length as usize;
+            let data_block = &self.data[self.next..end];
+
+            self.next += length as usize;
+            Some(InfoObject::new(id, &data_block))
+        } else {
+            None
+        }
+    }
+}
 
 impl DeviceInfoObjectIterator {
     ///Create a new DeviceInfoObjectIterator !
-    pub fn new() -> DeviceInfoObjectIterator {
-        todo!()
+    pub fn new(data: &[u8]) -> DeviceInfoObjectIterator {
+        Self {
+            data: Vec::from(data),
+            next: 0,
+        }
     }
 }
 
