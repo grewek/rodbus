@@ -1,9 +1,11 @@
+use std::str::from_utf8;
 use crate::decode::AppDecodeLevel;
 use crate::error::{AduParseError, InvalidRange};
 
 use scursor::ReadCursor;
 
 use crate::error::RequestError;
+use crate::InfoObject::DefinedString;
 use crate::server::ServerDeviceInfo;
 
 /// Modbus unit identifier, just a type-safe wrapper around `u8`
