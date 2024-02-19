@@ -64,7 +64,7 @@ impl ReadDevice {
 
     pub(crate) fn channel(
         request: ReadDeviceRequest,
-        tx: tokio::sync::oneshot::Sender<Result<DeviceInfo, RequestError>>,
+        tx: Sender<Result<DeviceInfo, RequestError>>,
     ) -> Self {
         Self::new(
             request,
