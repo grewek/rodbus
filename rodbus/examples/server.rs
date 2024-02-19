@@ -194,7 +194,7 @@ impl RequestHandler for SimpleHandler {
         read_dev_id: ReadDeviceCode,
         object_id: Option<u8>,
     ) -> Result<ServerDeviceInfo, ExceptionCode> {
-        let mut device_info = DeviceInfo::new(
+
         match read_dev_id {
             ReadDeviceCode::BasicStreaming =>
                 return Ok(ServerDeviceInfo::new(
