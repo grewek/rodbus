@@ -17,6 +17,7 @@ use crate::DeviceInfo;
 use crate::ReadDeviceRequest;
 
 use scursor::{ReadCursor, WriteCursor};
+use crate::server::ServerDeviceInfo;
 
 pub(crate) fn calc_bytes_for_bits(num_bits: usize) -> Result<u8, InternalError> {
     let div_8 = num_bits / 8;
