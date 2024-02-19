@@ -215,15 +215,11 @@ async fn run_channel(mut channel: Channel) -> Result<(), Box<dyn std::error::Err
                     )
                     .await?;
 
-                for info in basic_info.finalize_and_retrieve_objects() {
-                    match info {
-                        ModbusInfoObject::ModbusString(idx, string) => println!(
-                            "RECEIVED BASIC INFO OBJECT: {} WITH A INDEX OF {}",
-                            string, idx
-                        ),
-                        ModbusInfoObject::ModbusRawData(_, _) => unreachable!(),
-                    }
+                for info in basic_info.storage.into_iter() {
+                    println!("{:?}", info);
                 }
+
+
                 //TODO(Kay): The usage of this api feels very clunky but i don't know how to write a good one so experimenting is probably a good idea ?
                 let keys = channel
                     .read_device_identification(
@@ -232,7 +228,11 @@ async fn run_channel(mut channel: Channel) -> Result<(), Box<dyn std::error::Err
                     )
                     .await?;
 
-                for key in keys.finalize_and_retrieve_objects() {
+                for info in keys.storage.into_iter() {
+                    println!("{:?}", info);
+                }
+
+                /*for key in keys.finalize_and_retrieve_objects() {
                     match key {
                         ModbusInfoObject::ModbusString(_, key_name) => {
                             println!("RECEIVED STRING DATA: {}", key_name);
@@ -261,7 +261,7 @@ async fn run_channel(mut channel: Channel) -> Result<(), Box<dyn std::error::Err
                         }
                         ModbusInfoObject::ModbusRawData(_, _) => unreachable!(),
                     }
-                }
+                }*/
             }
             "rc" => {
                 // ANCHOR: read_coils
