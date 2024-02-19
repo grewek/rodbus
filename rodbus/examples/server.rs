@@ -15,6 +15,10 @@ struct SimpleHandler {
     basic_info: [String; 3],
     regular_keys: [String; 4],
     extended_values: [String; 4],
+
+    basic_streaming_response_data: Vec<u8>,
+    regular_streaming_response_data: Vec<u8>,
+
 }
 
 impl SimpleHandler {
