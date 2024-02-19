@@ -1,4 +1,3 @@
-use std::str::from_utf8;
 use crate::decode::AppDecodeLevel;
 use crate::error::{AduParseError, InvalidRange};
 
