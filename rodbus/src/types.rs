@@ -246,7 +246,7 @@ impl InfoObject {
     }
 }
 
-#[derive(Debug, PartialEq)]
+/*#[derive(Debug, PartialEq)]
 ///Data that is returned by a modbus server can contain ascii and in some cases other types of data. This data structure converts the raw bytes into ASCII Strings
 /// if possible. In the case where the data cannot be converted into ASCII due to unknown bytes we return the raw bytes to the user.
 pub enum ModbusInfoObject {
@@ -254,7 +254,7 @@ pub enum ModbusInfoObject {
     ModbusString(u8, String),
     ///Stores an unknown piece of binary data returned by the server. cast these into ascii strings at your own discretion. used for everything that comes from the extended storage (see modbus specification page 43 object table)
     ModbusRawData(u8, Vec<u8>),
-}
+}*/
 
 /*impl From<RawModbusInfoObject> for ModbusInfoObject {
     fn from(value: RawModbusInfoObject) -> Self {
