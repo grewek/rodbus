@@ -311,9 +311,9 @@ impl Serialize for ReadDeviceRequest {
     }
 }
 
-impl<T> Serialize for DeviceIdentificationResponse<T>
+impl<'a, T> Serialize for DeviceIdentificationResponse<'a, T>
 where
-    T: Fn() -> Result<DeviceInfo, crate::exception::ExceptionCode>,
+    T: Fn() -> Result<ServerDeviceInfo<'a>, crate::exception::ExceptionCode>,
 {
     fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         let device_data: DeviceInfo = (self.getter)()?;
