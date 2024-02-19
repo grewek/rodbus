@@ -391,10 +391,6 @@ impl Iterator for DeviceInfoObjectIterator {
     type Item = InfoObject;
 
     fn next(&mut self) -> Option<Self::Item> {
-        //NOTE: Our Object id at the start of every Object should be continuous that might
-        //      help us, but chances are that we just hit a byte that is also one bigger
-        //      than the last valid object_id !
-
         //NOTE: We cannot determine how many Objects are in the Raw bytes of the iterator !
         //      therefore we need to assume that if we consumed all bytes we have reached
         //      the end of the iterator ! Object Count can't help us either, as the Object
