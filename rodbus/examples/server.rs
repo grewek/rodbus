@@ -193,21 +193,58 @@ impl RequestHandler for SimpleHandler {
         mei_code: MeiCode,
         read_dev_id: ReadDeviceCode,
         object_id: Option<u8>,
-    ) -> Result<DeviceInfo, ExceptionCode> {
+    ) -> Result<ServerDeviceInfo, ExceptionCode> {
         let mut device_info = DeviceInfo::new(
-            mei_code,
-            read_dev_id,
-            DeviceConformityLevel::ExtendedIdentificationIndividual,
-            0,
-        );
-        let response_data = match read_dev_id {
-            ReadDeviceCode::BasicStreaming => self.basic_info.as_slice(),
-            ReadDeviceCode::RegularStreaming => self.regular_keys.as_slice(),
-            ReadDeviceCode::ExtendedStreaming => self.extended_values.as_slice(),
-            ReadDeviceCode::Specific => self.extended_values.as_slice(),
+        match read_dev_id {
+            ReadDeviceCode::BasicStreaming =>
+                return Ok(ServerDeviceInfo::new(
+                    DeviceConformityLevel::ExtendedIdentificationIndividual,
+                    None,
+                    &self.basic_streaming_response_data,
+                )),
+            ReadDeviceCode::RegularStreaming => return Ok(ServerDeviceInfo::new(
+                DeviceConformityLevel::ExtendedIdentificationIndividual,
+                None,
+                &self.regular_streaming_response_data
+            )),
+            _ => todo!(),
+            /*ReadDeviceCode::ExtendedStreaming => {
+                let mut writecursor = 0;
+
+                for (index, string_data) in self.basic_info.as_slice().iter().enumerate() {
+                    self.response_data[writecursor] = index as u8;
+                    writecursor += 1;
+                    assert!(string_data.len() <= u8::MAX as usize);
+                    self.response_data[writecursor] = (string_data.len() as u8);
+                    writecursor += 1;
+
+                    for byte in string_data.as_bytes() {
+                        self.response_data[writecursor];
+                        writecursor += 1;
+                    }
+                }
+            },
+            ReadDeviceCode::Specific if object_id.is_some() => {
+                let index = object_id.unwrap() as usize;
+
+                let message = match object_id.unwrap() {
+                    0x8A => &self.extended_values[0],
+                    0x8B => &self.extended_values[1],
+                    0x8C => &self.extended_values[2],
+                    0x8D => &self.extended_values[3],
+                    _ => unreachable!(),
+                };
+                device_info.storage = vec![InfoObject::new(
+                    //ReadDeviceCode::Specific,
+                    index as u8,
+                    //message.len() as u8,
+                    message.as_bytes(),
+                )];
+                self.extended_values.as_slice()
+            },*/
         };
 
-        if read_dev_id == ReadDeviceCode::Specific && object_id.is_some() {
+        /*if read_dev_id == ReadDeviceCode::Specific && object_id.is_some() {
             device_info.number_objects = 1;
             let index = object_id.unwrap() as usize;
 
@@ -218,10 +255,10 @@ impl RequestHandler for SimpleHandler {
                 0x8D => &self.extended_values[3],
                 _ => unreachable!(),
             };
-            device_info.storage = vec![RawModbusInfoObject::new(
-                ReadDeviceCode::Specific,
+            device_info.storage = vec![InfoObject::new(
+                //ReadDeviceCode::Specific,
                 index as u8,
-                message.len() as u8,
+                //message.len() as u8,
                 message.as_bytes(),
             )];
 
@@ -239,9 +276,9 @@ impl RequestHandler for SimpleHandler {
                 );
                 device_info.storage.push(obj);
             }
-        }
+        }*/
 
-        Ok(device_info)
+        //TODO(Kay): This is just a hack for getting things to work right now !
     }
 
     fn wrap(self) -> std::sync::Arc<std::sync::Mutex<Box<Self>>>
