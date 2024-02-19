@@ -228,7 +228,7 @@ pub enum InfoObject {
 
 impl InfoObject {
 
-    ///Create a new Info Object from a raw Object ID and a unknown data block.
+    ///Create a new Info Object from a raw Object ID and an unknown data block.
     pub fn new(id: u8, data: &[u8]) -> InfoObject {
         let id: StringInfoObject = id.into();
         match id {
