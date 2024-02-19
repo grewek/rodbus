@@ -97,18 +97,33 @@ impl ReadDevice {
     fn parse_device_identification_response(
         cursor: &mut ReadCursor,
     ) -> Result<DeviceInfo, RequestError> {
-        let mei_code = cursor.read_u8()?.try_into()?;
-        let device_id = cursor.read_u8()?.try_into()?;
-        let conformity_level = cursor.read_u8()?.try_into()?;
 
+        cursor.read_u8()?; //Consume the MEI Code
+        //TODO(Kay): Consume the Read Device ID Code that is usually Echoed by the Server.
+        let conformity_level = cursor.read_u8()?;
         let more_follows = cursor.read_u8()?;
         let value = cursor.read_u8()?;
+        //let value = cursor.read_u8()?;
+        //let object_count = cursor.read_u8()?;
         let object_count = cursor.read_u8()?;
 
-        let mut result = DeviceInfo::new(mei_code, device_id, conformity_level, object_count)
-            .continue_at(more_follows, value);
+        //let mut test_objects = vec![];
 
-        ReadDevice::parse_device_info_objects(device_id, &mut result.storage, cursor)?;
+        let objects = cursor.read_all();
+
+        //TODO(Kay): This messy code works as it should ! Now here is the tricky part getting
+        //           this mess into a state which is working and is not a sore for the eyes...
+
+
+        //TODO(Kay): We need to figure out a better type here probably maybe even one that encapsulates the
+        //           DeviceInfoObjectIterator...
+        let iter = DeviceInfoObjectIterator::new(objects);
+
+        let result = DeviceInfo::new(MeiCode::ReadDeviceId,
+                        ReadDeviceCode::ExtendedStreaming,
+                        DeviceConformityLevel::BasicIdentificationStream,
+                        object_count,
+                        iter);
 
         Ok(result)
     }
