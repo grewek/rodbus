@@ -360,9 +360,9 @@ where
     }
 }
 
-impl<T> Loggable for DeviceIdentificationResponse<T>
+impl<'a, T> Loggable for DeviceIdentificationResponse<'a, T>
 where
-    T: Fn() -> Result<DeviceInfo, crate::exception::ExceptionCode>,
+    T: Fn() -> Result<ServerDeviceInfo<'a>, crate::exception::ExceptionCode>,
 {
     fn log(
         &self,
