@@ -6,8 +6,9 @@ use crate::client::requests::read_registers::ReadRegisters;
 use crate::client::requests::write_multiple::{MultipleWriteRequest, WriteMultiple};
 use crate::client::requests::write_single::SingleWrite;
 use crate::types::{AddressRange, BitIterator, Indexed, RegisterIterator, UnitId};
-use crate::DecodeLevel;
+use crate::{DecodeLevel, DeviceInfoObjectIterator};
 use crate::{error::*, DeviceInfo, ReadDeviceRequest};
+use crate::server::ServerDeviceInfo;
 
 use super::requests::read_device_identification::ReadDevice;
 
