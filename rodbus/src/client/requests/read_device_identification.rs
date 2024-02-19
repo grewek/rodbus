@@ -128,16 +128,17 @@ impl ReadDevice {
         Ok(result)
     }
 
-    fn parse_device_info_objects(
+    /*fn parse_device_info_objects(
         read_device_code: ReadDeviceCode,
-        container: &mut Vec<RawModbusInfoObject>,
+        container: &mut Vec<InfoObject>,
         cursor: &mut ReadCursor,
     ) -> Result<(), RequestError> {
         loop {
+            //TODO(Kay): Figure out if there is a potential that this loop will hang ?
             let obj_id = cursor.read_u8()?;
             let obj_length = cursor.read_u8()?;
             let data = cursor.read_bytes(obj_length as usize)?;
-            let object = RawModbusInfoObject::new(read_device_code, obj_id, obj_length, data);
+            let object = InfoObject::new(obj_id, data);
             container.push(object);
 
             if cursor.is_empty() {
@@ -146,5 +147,5 @@ impl ReadDevice {
         }
 
         Ok(())
-    }
+    }*/
 }
