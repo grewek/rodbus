@@ -316,13 +316,27 @@ where
     T: Fn() -> Result<ServerDeviceInfo<'a>, crate::exception::ExceptionCode>,
 {
     fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
-        let device_data: DeviceInfo = (self.getter)()?;
-
-        cursor.write_u8(device_data.mei_code as u8)?;
-        cursor.write_u8(device_data.read_device_id as u8)?;
+        let device_data: ServerDeviceInfo = (self.getter)()?;
+        //NOTE: This will never change so we can just fix it in place
+        //TODO(Kay): CONSTANT
+        cursor.write_u8(0x0E)?;
+        //FIXME(Kay): We need the Read Device ID Code or we are not conforming to the specification !
         cursor.write_u8(device_data.conformity_level as u8)?;
 
-        const SAFETY_MARGIN: u8 = 7;
+        if let Some(value) = device_data.next_object_id {
+            cursor.write_u8(0xFF)?;
+            cursor.write_u8(value)?;
+        } else {
+            cursor.write_u8(0x00)?;
+            cursor.write_u8(0x00)?;
+        }
+
+        for byte in device_data.object_data {
+            cursor.write_u8(*byte)?;
+        }
+
+        //TODO(Kay): This needs to be filled in correctly !
+        /*const SAFETY_MARGIN: u8 = 7;
         let max = device_data.response_message_count(MAX_ADU_LENGTH as u8 - SAFETY_MARGIN);
 
         max.serialize(cursor)?;
@@ -340,7 +354,7 @@ where
             let data = message.get_data();
             cursor.write_u8(data.len() as u8)?;
             cursor.write_bytes(data)?;
-        }
+        }*/
 
         Ok(())
     }
