@@ -369,7 +369,7 @@ impl DeviceInfo {
         None
     }*/
 
-    ///Convert all Raw Modbus objects into ModbusObjects
+    /*///Convert all Raw Modbus objects into ModbusObjects
     pub fn finalize_and_retrieve_objects(&self) -> Vec<ModbusInfoObject> {
         let mut result = vec![];
         for raw_object in &self.storage {
@@ -377,7 +377,7 @@ impl DeviceInfo {
         }
 
         result
-    }
+    }*/
 }
 
 ///Iterator over all received Info Objects from the Modbus Server
