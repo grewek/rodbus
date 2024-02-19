@@ -103,25 +103,16 @@ impl ReadDevice {
         let conformity_level = cursor.read_u8()?;
         let more_follows = cursor.read_u8()?;
         let value = cursor.read_u8()?;
-        //let value = cursor.read_u8()?;
-        //let object_count = cursor.read_u8()?;
+
         let object_count = cursor.read_u8()?;
 
-        //let mut test_objects = vec![];
-
         let objects = cursor.read_all();
-
-        //TODO(Kay): This messy code works as it should ! Now here is the tricky part getting
-        //           this mess into a state which is working and is not a sore for the eyes...
-
 
         //TODO(Kay): We need to figure out a better type here probably maybe even one that encapsulates the
         //           DeviceInfoObjectIterator...
         let iter = DeviceInfoObjectIterator::new(objects);
 
-        let result = DeviceInfo::new(MeiCode::ReadDeviceId,
-                        ReadDeviceCode::ExtendedStreaming,
-                        DeviceConformityLevel::BasicIdentificationStream,
+        let result = DeviceInfo::new(conformity_level.try_into()?,
                         object_count,
                         iter);
 
