@@ -238,7 +238,7 @@ impl InfoObject {
             StringInfoObject::ProductName | StringInfoObject::ModelName |
             StringInfoObject::UserApplicationName => {
                 //TODO(Kay): We need error handling here !
-                let string_data = String::from(from_utf8(data).unwrap());
+                let string_data = String::from(std::str::from_utf8(data).unwrap());
                 DefinedString(id, string_data)
             }
             StringInfoObject::Reserved(id) | StringInfoObject::Other(id) => InfoObject::Other(id, Vec::from(data)),
