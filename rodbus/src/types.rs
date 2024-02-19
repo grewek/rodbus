@@ -228,6 +228,8 @@ pub enum InfoObject {
 impl InfoObject {
 
     ///Create a new Info Object from a raw Object ID and an unknown data block.
+    /// NOTE: We assume that data coming from the basic or regular address space is __ALWAYS__
+    ///       valid ASCII, this behaviour is also defined in the Specification.
     pub fn new(id: u8, data: &[u8]) -> InfoObject {
         let id: StringInfoObject = id.into();
         match id {
