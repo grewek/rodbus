@@ -16,10 +16,14 @@ pub struct ServerDeviceInfo<'a> {
 }
 
 
-impl<'a> ServerDeviceInfo<'_> {
-    ///TEMPORARY Create a new ServerDeviceInfoObject !
-    pub fn new() -> Self {
-        todo!()
+impl<'a> ServerDeviceInfo<'a> {
+    ///Create a new ServerDeviceInfo Response !
+    pub fn new(conformity_level: DeviceConformityLevel, next_object_id: Option<u8>, object_data: &'a[u8]) -> Self {
+        Self {
+            conformity_level,
+            next_object_id,
+            object_data,
+        }
     }
 }
 
