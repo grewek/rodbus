@@ -255,7 +255,7 @@ pub enum ModbusInfoObject {
     ModbusRawData(u8, Vec<u8>),
 }
 
-impl From<RawModbusInfoObject> for ModbusInfoObject {
+/*impl From<RawModbusInfoObject> for ModbusInfoObject {
     fn from(value: RawModbusInfoObject) -> Self {
         match value.device_code {
             ReadDeviceCode::BasicStreaming | ReadDeviceCode::RegularStreaming
