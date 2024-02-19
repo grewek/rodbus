@@ -57,8 +57,30 @@ impl SimpleHandler {
     fn input_registers_as_mut(&mut self) -> &mut [u16] {
         self.input_registers.as_mut_slice()
     }
-}
 
+    fn create_basic_streaming_response(mut self) -> Self{
+        let mut answer = Vec::with_capacity(u8::MAX as usize);
+        let data = self.basic_info.as_slice().iter().enumerate();
+
+        //NOTE: We write out how many objects our answer contains
+        answer.push(data.len() as u8);
+
+        for (index, string_data) in data {
+            //NOTE: Write out the Object ID
+            answer.push(index as u8);
+
+            assert!(string_data.len() <= u8::MAX as usize);
+            //NOTE: Write the Object length
+            answer.push(string_data.len() as u8);
+
+            //NOTE: Write the data itself !
+            answer.extend_from_slice(string_data.as_bytes());
+        }
+
+        self.basic_streaming_response_data = answer;
+
+        self
+    }
 // ANCHOR: request_handler
 impl RequestHandler for SimpleHandler {
     fn read_coil(&self, address: u16) -> Result<bool, ExceptionCode> {
