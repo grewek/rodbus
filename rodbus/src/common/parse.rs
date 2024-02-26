@@ -42,7 +42,7 @@ impl Parse for ReadDeviceRequest {
         Ok(Self {
             mei_code: mei_type,
             dev_id,
-            obj_id: Some(obj_id),
+            obj_id: if obj_id > 0x00 { Some(obj_id) } else { None },
         })
     }
 }
