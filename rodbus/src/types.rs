@@ -337,12 +337,13 @@ impl DeviceInfo {
     pub fn new(
         conformity_level: DeviceConformityLevel,
         number_objects: u8,
+        object_id: Option<u8>,
         iter: DeviceInfoObjectIterator,
     ) -> Self {
         Self {
             conformity_level,
             number_objects,
-            continue_at: None,
+            continue_at: object_id,
             storage: iter,
         }
     }
