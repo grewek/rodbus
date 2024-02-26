@@ -170,6 +170,8 @@ pub enum InternalError {
     BadSeekOperation,
     /// Byte count would exceed maximum allowed size in the ADU of u8
     BadByteCount(usize),
+    /// A Position was marked as write later, but wasn't filled before trying to send it.
+    ReservedOffsetWasNotWritten(usize)
 }
 
 impl std::error::Error for InternalError {}
@@ -194,6 +196,9 @@ impl std::fmt::Display for InternalError {
             }
             InternalError::BadByteCount(size) => {
                 write!(f, "Byte count of in ADU {size} exceeds maximum size of u8")
+            }
+            InternalError::ReservedOffsetWasNotWritten(offset) => {
+                write!(f, "Reserved a byte for later write but the write was not executed forgot position: {:02X}", offset)
             }
         }
     }
