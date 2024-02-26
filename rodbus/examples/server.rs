@@ -85,54 +85,111 @@ impl SimpleHandler {
         self.input_registers.as_mut_slice()
     }
 
-    fn create_basic_streaming_response(mut self) -> Self{
-        let mut answer = Vec::with_capacity(u8::MAX as usize);
-        let data = self.basic_info.as_slice().iter().enumerate();
-
-        //NOTE: We write out how many objects our answer contains
-        answer.push(data.len() as u8);
-
-        for (index, string_data) in data {
-            //NOTE: Write out the Object ID
-            answer.push(index as u8);
-
-            assert!(string_data.len() <= u8::MAX as usize);
-            //NOTE: Write the Object length
-            answer.push(string_data.len() as u8);
-
-            //NOTE: Write the data itself !
-            answer.extend_from_slice(string_data.as_bytes());
+    fn generate_info_response(mut self) -> Self {
+        for obj in &self.basic_info {
+            match obj {
+                InfoObject::DefinedString(id, data) => {
+                    self.info_response_layout_basic.insert((*id).into(), self.info_response_data_basic.len());
+                    self.info_response_data_basic.push((*id).into());
+                    self.info_response_data_basic.push(data.len() as u8);
+                    self.info_response_data_basic.extend_from_slice(data.as_bytes());
+                },
+                InfoObject::Other(id, data) =>{
+                    self.info_response_layout_basic.insert((*id).into(), self.info_response_data_basic.len());
+                    self.info_response_data_basic.push(*id);
+                    self.info_response_data_regular.push(data.len() as u8);
+                    self.info_response_data_basic.extend_from_slice(data.as_slice());
+                },
+            };
         }
 
-        self.basic_streaming_response_data = answer;
+        for obj in &self.regular_keys {
+            match obj {
+                InfoObject::DefinedString(id, data) => {
+                    self.info_response_layout_regular.insert((*id).into(), self.info_response_data_regular.len());
+                    self.info_response_data_regular.push((*id).into());
+                    self.info_response_data_regular.push(data.len() as u8);
+                    self.info_response_data_regular.extend_from_slice(data.as_bytes());
+                },
+                InfoObject::Other(id, data) =>{
+                    self.info_response_layout_regular.insert((*id).into(), self.info_response_data_regular.len());
+                    self.info_response_data_regular.push(*id);
+                    self.info_response_data_regular.push(data.len() as u8);
+                    self.info_response_data_regular.extend_from_slice(data.as_slice());
+                },
+            };
+        }
 
+        for obj in &self.extended_values {
+            match obj {
+                InfoObject::DefinedString(id, data) => {
+                    self.info_response_layout_extended.insert((*id).into(), self.info_response_data_extended.len());
+                    self.info_response_data_extended.push((*id).into());
+                    self.info_response_data_extended.push(data.len() as u8);
+                    self.info_response_data_extended.extend_from_slice(data.as_bytes());
+                },
+                InfoObject::Other(id, data) =>{
+                    self.info_response_layout_extended.insert((*id).into(), self.info_response_data_extended.len());
+                    self.info_response_data_extended.push(*id);
+                    self.info_response_data_extended.push(data.len() as u8);
+                    self.info_response_data_extended.extend_from_slice(data.as_slice());
+                },
+            };
+        }
+
+        /*for obj in self.regular_keys {
+            match obj {
+                InfoObject::DefinedString(id, data) | InfoObject::Other(id, data) => {
+                    self.info_response_data_regular.push(id.try_into().unwrap());
+                    self.info_response_data_regular.extend_from_slice(data.as_bytes());
+                }
+            }
+        }
+
+        for obj in self.extended_values {
+            match obj {
+                InfoObject::DefinedString(id, data) | InfoObject::Other(id, data) => {
+                    self.info_response_data_extended.push(id.try_into().unwrap());
+                    self.info_response_data_extended.extend_from_slice(data.as_bytes());
+                }
+            }
+        }*/
         self
     }
 
-    fn create_regular_streaming_response(mut self) -> Self {
-        let mut answer = Vec::with_capacity(u8::MAX as usize);
-        let data = self.regular_keys.as_slice().iter().enumerate();
-
-        answer.push(data.len() as u8);
-
-        let base = 0x03;
-
-        for (index, string_data) in data {
-
-            answer.push(base + index as u8);
-
-            assert!(string_data.len() <= u8::MAX as usize);
-            //NOTE: Write the Object length
-            answer.push(string_data.len() as u8);
-
-            //NOTE: Write the data itself !
-            answer.extend_from_slice(string_data.as_bytes());
+    fn get_info_object_response_data(&self, read_device_code: ReadDeviceCode, object_id: Option<u8>) -> ServerDeviceInfo {
+        todo!()
+    }
+    fn get_basic_info_response(&self, object_id: Option<u8>) -> &[u8] {
+        if let Some(start) = object_id {
+            //BUG: No object count !
+            let start = self.info_response_layout_basic[&start];
+            return &self.info_response_data_basic[start..];
         }
 
-        self.regular_streaming_response_data = answer;
-
-        self
+        &self.info_response_data_basic
     }
+
+    fn get_extended_info_response(&self, object_id: Option<u8>) -> &[u8] {
+        if let Some(start) = object_id {
+            if self.info_response_layout_extended.contains_key(&start) {
+                let start = self.info_response_layout_extended[&start];
+                return &self.info_response_data_extended[start..];
+            }
+        }
+
+        &self.info_response_data_extended
+    }
+
+    fn get_regular_info_response(&self, object_id: Option<u8>) -> &[u8] {
+        if let Some(start) = object_id {
+            let start = self.info_response_layout_regular[&start];
+            return &self.info_response_data_regular[start..]
+        }
+
+        &self.info_response_data_regular
+    }
+
 }
 
 // ANCHOR: request_handler
