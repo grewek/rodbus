@@ -7,6 +7,7 @@ use crate::types::{
 };
 
 use scursor::{ReadCursor, WriteCursor};
+use crate::common::frame::FrameRecords;
 
 pub(crate) trait RegistersCallback:
     FnOnce(Result<RegisterIterator, RequestError>) + Send + Sync + 'static
@@ -75,7 +76,7 @@ impl ReadRegisters {
     }
 
     pub(crate) fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
-        self.request.get().serialize(cursor)
+        self.request.get().serialize(&mut FrameRecords::new(), cursor)
     }
 
     pub(crate) fn failure(&mut self, err: RequestError) {

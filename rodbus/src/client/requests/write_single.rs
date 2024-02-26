@@ -8,6 +8,7 @@ use crate::error::RequestError;
 use crate::types::{coil_from_u16, coil_to_u16, Indexed};
 
 use scursor::{ReadCursor, WriteCursor};
+use crate::common::frame::FrameRecords;
 
 pub(crate) trait SingleWriteOperation: Sized + PartialEq {
     fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError>;

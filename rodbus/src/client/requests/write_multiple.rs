@@ -8,6 +8,7 @@ use crate::types::{AddressRange, Indexed};
 
 use scursor::{ReadCursor, WriteCursor};
 use std::convert::TryFrom;
+use crate::common::frame::FrameRecords;
 
 /// Collection of values and starting address
 ///
@@ -95,7 +96,7 @@ where
     }
 
     pub(crate) fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
-        self.request.serialize(cursor)
+        self.request.serialize(&mut FrameRecords::new(), cursor)
     }
 
     pub(crate) fn failure(&mut self, err: RequestError) {
