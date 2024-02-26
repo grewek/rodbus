@@ -6,6 +6,7 @@ use crate::types::{AddressRange, BitIterator, BitIteratorDisplay, ReadBitsRange}
 use crate::Indexed;
 
 use scursor::{ReadCursor, WriteCursor};
+use crate::common::frame::FrameRecords;
 
 pub(crate) trait BitsCallback:
     FnOnce(Result<BitIterator, RequestError>) + Send + Sync + 'static
@@ -72,7 +73,7 @@ impl ReadBits {
     }
 
     pub(crate) fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
-        self.request.get().serialize(cursor)
+        self.request.get().serialize(&mut FrameRecords::new(), cursor)
     }
 
     pub(crate) fn failure(&mut self, err: RequestError) {

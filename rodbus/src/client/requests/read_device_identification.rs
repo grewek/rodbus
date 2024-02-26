@@ -2,6 +2,7 @@ use scursor::{ReadCursor, WriteCursor};
 use tokio::sync::oneshot::Sender;
 
 use crate::{common::{function::FunctionCode, traits::Serialize}, AppDecodeLevel, DeviceInfo, ReadDeviceCode, ReadDeviceRequest, RequestError, DeviceInfoObjectIterator, MeiCode, DeviceConformityLevel};
+use crate::common::frame::FrameRecords;
 
 pub(crate) struct ReadDevice {
     pub(crate) request: ReadDeviceRequest,
@@ -59,7 +60,7 @@ impl ReadDevice {
     }
 
     pub(crate) fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
-        self.request.serialize(cursor)
+        self.request.serialize(&mut FrameRecords::new(), cursor)
     }
 
     pub(crate) fn channel(
@@ -105,6 +106,7 @@ impl ReadDevice {
         let value = cursor.read_u8()?;
 
         let object_count = cursor.read_u8()?;
+        tracing::info!("Received data with object_count: {}", object_count);
 
         let objects = cursor.read_all();
 
@@ -114,6 +116,7 @@ impl ReadDevice {
 
         let result = DeviceInfo::new(conformity_level.try_into()?,
                         object_count,
+                        if more_follows == 0xFF { Some(value) } else { None },
                         iter);
 
         Ok(result)
