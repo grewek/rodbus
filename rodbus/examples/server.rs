@@ -210,6 +210,7 @@ impl RequestHandler for SimpleHandler {
         self.input_registers.get(address as usize).to_result()
     }
 
+
     fn write_single_coil(&mut self, value: Indexed<bool>) -> Result<(), ExceptionCode> {
         tracing::info!(
             "write single coil, index: {} value: {}",
@@ -272,97 +273,37 @@ impl RequestHandler for SimpleHandler {
         result
     }
 
-    fn read_device_info(
+    fn read_device_info_basic_streaming(
         &self,
-        mei_code: MeiCode,
         read_dev_id: ReadDeviceCode,
         object_id: Option<u8>,
     ) -> Result<ServerDeviceInfo, ExceptionCode> {
 
-        match read_dev_id {
-            ReadDeviceCode::BasicStreaming =>
-                return Ok(ServerDeviceInfo::new(
-                    DeviceConformityLevel::ExtendedIdentificationIndividual,
-                    None,
-                    &self.basic_streaming_response_data,
-                )),
-            ReadDeviceCode::RegularStreaming => return Ok(ServerDeviceInfo::new(
-                DeviceConformityLevel::ExtendedIdentificationIndividual,
-                None,
-                &self.regular_streaming_response_data
-            )),
-            _ => todo!(),
-            /*ReadDeviceCode::ExtendedStreaming => {
-                let mut writecursor = 0;
+        Ok(ServerDeviceInfo::new(
+            DeviceConformityLevel::BasicIdentificationStream,
+            object_id,
+            self.get_basic_info_response(object_id)
+        ))
+    }
 
-                for (index, string_data) in self.basic_info.as_slice().iter().enumerate() {
-                    self.response_data[writecursor] = index as u8;
-                    writecursor += 1;
-                    assert!(string_data.len() <= u8::MAX as usize);
-                    self.response_data[writecursor] = (string_data.len() as u8);
-                    writecursor += 1;
+    fn read_device_info_regular_streaming(&self, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Result<ServerDeviceInfo, ExceptionCode> {
+        Ok(ServerDeviceInfo::new(
+            DeviceConformityLevel::RegularIdentificationStream,
+            object_id,
+            self.get_regular_info_response(object_id)
+        ))
+    }
 
-                    for byte in string_data.as_bytes() {
-                        self.response_data[writecursor];
-                        writecursor += 1;
-                    }
-                }
-            },
-            ReadDeviceCode::Specific if object_id.is_some() => {
-                let index = object_id.unwrap() as usize;
+    fn read_device_info_extended_streaming(&self, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Result<ServerDeviceInfo, ExceptionCode> {
+        Ok(ServerDeviceInfo::new(
+            DeviceConformityLevel::ExtendedIdentificationStream,
+            object_id,
+            self.get_extended_info_response(object_id)
+        ))
+    }
 
-                let message = match object_id.unwrap() {
-                    0x8A => &self.extended_values[0],
-                    0x8B => &self.extended_values[1],
-                    0x8C => &self.extended_values[2],
-                    0x8D => &self.extended_values[3],
-                    _ => unreachable!(),
-                };
-                device_info.storage = vec![InfoObject::new(
-                    //ReadDeviceCode::Specific,
-                    index as u8,
-                    //message.len() as u8,
-                    message.as_bytes(),
-                )];
-                self.extended_values.as_slice()
-            },*/
-        };
-
-        /*if read_dev_id == ReadDeviceCode::Specific && object_id.is_some() {
-            device_info.number_objects = 1;
-            let index = object_id.unwrap() as usize;
-
-            let message = match object_id.unwrap() {
-                0x8A => &self.extended_values[0],
-                0x8B => &self.extended_values[1],
-                0x8C => &self.extended_values[2],
-                0x8D => &self.extended_values[3],
-                _ => unreachable!(),
-            };
-            device_info.storage = vec![InfoObject::new(
-                //ReadDeviceCode::Specific,
-                index as u8,
-                //message.len() as u8,
-                message.as_bytes(),
-            )];
-
-            return Ok(device_info);
-        } else {
-            device_info.number_objects = response_data.len() as u8;
-            device_info.storage = vec![];
-
-            for (idx, info_string) in response_data.iter().enumerate() {
-                let obj = RawModbusInfoObject::new(
-                    read_dev_id,
-                    idx as u8,
-                    info_string.len() as u8,
-                    info_string.as_bytes(),
-                );
-                device_info.storage.push(obj);
-            }
-        }*/
-
-        //TODO(Kay): This is just a hack for getting things to work right now !
+    fn read_device_info_individual(&self, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Result<ServerDeviceInfo, ExceptionCode> {
+        todo!()
     }
 
     fn wrap(self) -> std::sync::Arc<std::sync::Mutex<Box<Self>>>
