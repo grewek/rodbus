@@ -199,6 +199,21 @@ pub enum StringInfoObject {
     Other(u8),
 }
 
+impl From<StringInfoObject> for u8 {
+    fn from(value: StringInfoObject) -> Self {
+        match value {
+            StringInfoObject::VendorName => 0x00,
+            StringInfoObject::ProductCode => 0x01,
+            StringInfoObject::MajorMinorRevision => 0x02,
+            StringInfoObject::VendorUrl => 0x03,
+            StringInfoObject::ProductName => 0x04,
+            StringInfoObject::ModelName => 0x05,
+            StringInfoObject::UserApplicationName => 0x06,
+            StringInfoObject::Reserved(id) => id,
+            StringInfoObject::Other(id) => id,
+        }
+    }
+}
 impl From<u8> for StringInfoObject {
     fn from(value: u8) -> Self {
         match value {
