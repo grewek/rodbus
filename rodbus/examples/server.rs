@@ -40,12 +40,33 @@ impl SimpleHandler {
             holding_registers,
             input_registers,
 
-            basic_info: ["Example Vendor".to_string(), "Little Dictionary".to_string(), "0.1.0".to_string()],
-            regular_keys: ["0x8A".to_string(), "0x8B".to_string(), "0x8C".to_string(), "0x8D".to_string()],
-            extended_values: ["This is the value for key 0x8A".to_string(), "Value for 0x8B which is a bit longer than your usual method to test if the behavior of sending responses is correct and works, and will it work over a different client as well ?".to_string(), "Another value for 0x8C".to_string(), "Last but not least the value for 0x8D".to_string()],
-            basic_streaming_response_data: vec![0u8; u8::MAX as usize],
-            regular_streaming_response_data: vec![0u8; u8::MAX as usize],
-        }.create_basic_streaming_response().create_regular_streaming_response()
+            basic_info: [
+                InfoObject::new(0x00, "Example Vendor".as_bytes()),
+                InfoObject::new(0x01, "Little Dictionary".as_bytes()),
+                InfoObject::new(0x02, "0.1.0".as_bytes())
+            ],
+            regular_keys: [
+                InfoObject::new(0x03, "0x8A".as_bytes()),
+                InfoObject::new(0x04, "0x8B".as_bytes()),
+                InfoObject::new(0x05, "0x8C".as_bytes()),
+                InfoObject::new(0x06, "0x8D".as_bytes())
+            ],
+            extended_values: [
+                InfoObject::new(0x8A, "This is the value for key 0x8A".as_bytes()),
+                InfoObject::new(0x8B, "Value for 0x8B which is a bit longer than your usual method to test if the behavior of sending responses is correct and works, and will it work over a different client as well ?".as_bytes()),
+                InfoObject::new(0x8C, "Another value for 0x8C".as_bytes()),
+                InfoObject::new(0x8D, "Last but not least the value for 0x8D".as_bytes())
+            ],
+
+            info_response_layout_basic: HashMap::new(),
+            info_response_data_basic: vec![],
+
+            info_response_layout_regular: HashMap::new(),
+            info_response_data_regular: vec![],
+
+            info_response_layout_extended: HashMap::new(),
+            info_response_data_extended: vec![],
+        }.generate_info_response()
     }
 
     fn coils_as_mut(&mut self) -> &mut [bool] {
