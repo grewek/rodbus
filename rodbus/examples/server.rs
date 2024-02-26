@@ -1,10 +1,11 @@
 use std::process::exit;
-
+use std::collections::HashMap;
 use tokio_stream::StreamExt;
 use tokio_util::codec::{FramedRead, LinesCodec};
 
 use rodbus::server::*;
 use rodbus::*;
+
 
 struct SimpleHandler {
     coils: Vec<bool>,
@@ -12,13 +13,18 @@ struct SimpleHandler {
     holding_registers: Vec<u16>,
     input_registers: Vec<u16>,
 
-    basic_info: [String; 3],
-    regular_keys: [String; 4],
-    extended_values: [String; 4],
+    basic_info: [InfoObject; 3],
+    regular_keys: [InfoObject; 4],
+    extended_values: [InfoObject; 4],
 
-    basic_streaming_response_data: Vec<u8>,
-    regular_streaming_response_data: Vec<u8>,
+    info_response_layout_basic: HashMap<u8, usize>,
+    info_response_data_basic: Vec<u8>,
 
+    info_response_layout_regular: HashMap<u8, usize>,
+    info_response_data_regular: Vec<u8>,
+
+    info_response_layout_extended: HashMap<u8, usize>,
+    info_response_data_extended: Vec<u8>,
 }
 
 impl SimpleHandler {
