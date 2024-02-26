@@ -1,6 +1,6 @@
 use crate::common::phys::PhysLayer;
 use crate::server::{Authorization, AuthorizationHandler};
-use crate::{DecodeLevel, UnitId};
+use crate::{DecodeLevel, ReadDeviceCode, UnitId};
 
 use crate::common::frame::{
     Frame, FrameDestination, FrameHeader, FrameWriter, FramedReader, FunctionField,
@@ -215,6 +215,16 @@ where
                     &mut self.writer,
                     self.decode,
                 )?;
+
+                //TODO(Kay): Here we should use our FrameRecords interface to check whether or not
+                //           the user has supplied all the necessary fields and if not we should
+                //           throw an error with an indication which field has been forgotten to
+                //           write !
+                /*if self.writer.future_writes() > 0 {
+                    //TODO(Kay): We need more information for the user what offset was empty ? Should we give these names ? i.e. OBJ_COUNT_BYTE
+                    RequestError::Internal(InternalError::ReservedOffsetWasNotWritten(0, 0))
+                }*/
+
                 io.write(reply, self.decode.physical).await?;
             }
             FrameDestination::Broadcast => match request.into_broadcast_request() {
@@ -257,7 +267,12 @@ impl AuthorizationType {
             }
             Request::ReadInputRegisters(x) => handler.read_input_registers(unit_id, x.inner, role),
             Request::ReadDeviceIdentification(x) => {
-                handler.read_device_info(unit_id, role, x.mei_code, x.dev_id, x.obj_id)
+                match x.dev_id {
+                    ReadDeviceCode::BasicStreaming => handler.read_device_info_basic_streaming(unit_id, role, x.dev_id, x.obj_id),
+                    ReadDeviceCode::RegularStreaming => handler.read_device_info_regular_streaming(unit_id, role, x.dev_id, x.obj_id),
+                    ReadDeviceCode::ExtendedStreaming => handler.read_device_info_extended_streaming(unit_id, role, x.dev_id, x.obj_id),
+                    ReadDeviceCode::Specific => handler.read_device_info_individual(unit_id, role, x.dev_id, x.obj_id),
+                }
             }
             Request::WriteSingleCoil(x) => handler.write_single_coil(unit_id, x.index, role),
             Request::WriteSingleRegister(x) => {
