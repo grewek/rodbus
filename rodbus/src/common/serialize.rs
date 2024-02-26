@@ -17,6 +17,7 @@ use crate::DeviceInfo;
 use crate::ReadDeviceRequest;
 
 use scursor::{ReadCursor, WriteCursor};
+use crate::common::frame::FrameRecords;
 use crate::server::ServerDeviceInfo;
 
 pub(crate) fn calc_bytes_for_bits(num_bits: usize) -> Result<u8, InternalError> {
@@ -33,7 +34,7 @@ pub(crate) fn calc_bytes_for_registers(num_registers: usize) -> Result<u8, Inter
 }
 
 impl Serialize for AddressRange {
-    fn serialize(&self, cur: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cur: &mut WriteCursor) -> Result<(), RequestError> {
         cur.write_u16_be(self.start)?;
         cur.write_u16_be(self.count)?;
         Ok(())
@@ -60,14 +61,14 @@ impl Loggable for AddressRange {
 }
 
 impl Serialize for crate::exception::ExceptionCode {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         cursor.write_u8((*self).into())?;
         Ok(())
     }
 }
 
 impl Serialize for Indexed<bool> {
-    fn serialize(&self, cur: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cur: &mut WriteCursor) -> Result<(), RequestError> {
         cur.write_u16_be(self.index)?;
         cur.write_u16_be(coil_to_u16(self.value))?;
         Ok(())
@@ -106,7 +107,7 @@ impl Loggable for Indexed<bool> {
 }
 
 impl Serialize for Indexed<u16> {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         cursor.write_u16_be(self.index)?;
         cursor.write_u16_be(self.value)?;
         Ok(())
@@ -141,7 +142,7 @@ impl Loggable for Indexed<u16> {
 }
 
 impl Serialize for &[bool] {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         // how many bytes should we have?
         let num_bytes = calc_bytes_for_bits(self.len())?;
 
@@ -165,7 +166,7 @@ impl<T> Serialize for BitWriter<T>
 where
     T: Fn(u16) -> Result<bool, crate::exception::ExceptionCode>,
 {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         let range = self.range.get();
         // write the number of bytes that follow
         let num_bytes = calc_bytes_for_bits(range.count as usize)?;
@@ -228,7 +229,7 @@ impl<T> Serialize for RegisterWriter<T>
 where
     T: Fn(u16) -> Result<u16, crate::exception::ExceptionCode>,
 {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         // write the number of bytes that follow
         let num_bytes = calc_bytes_for_registers(self.range.get().count as usize)?;
         cursor.write_u8(num_bytes)?;
@@ -270,7 +271,7 @@ where
 }
 
 impl Serialize for &[u16] {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         let num_bytes = calc_bytes_for_registers(self.len())?;
         cursor.write_u8(num_bytes)?;
 
@@ -283,21 +284,21 @@ impl Serialize for &[u16] {
 }
 
 impl Serialize for WriteMultiple<bool> {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
-        self.range.serialize(cursor)?;
-        self.values.as_slice().serialize(cursor)
+    fn serialize(&self, records: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+        self.range.serialize(records, cursor)?;
+        self.values.as_slice().serialize(records, cursor)
     }
 }
 
 impl Serialize for WriteMultiple<u16> {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
-        self.range.serialize(cursor)?;
-        self.values.as_slice().serialize(cursor)
+    fn serialize(&self, records: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+        self.range.serialize(records, cursor)?;
+        self.values.as_slice().serialize(records, cursor)
     }
 }
 
 impl Serialize for ReadDeviceRequest {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         cursor.write_u8(self.mei_code as u8)?;
         cursor.write_u8(self.dev_id as u8)?;
 
@@ -311,11 +312,17 @@ impl Serialize for ReadDeviceRequest {
     }
 }
 
+
+
 impl<'a, T> Serialize for DeviceIdentificationResponse<'a, T>
 where
     T: Fn() -> Result<ServerDeviceInfo<'a>, crate::exception::ExceptionCode>,
 {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, records: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+        //TODO(Kay): Fix this mess
+        //TODO(Kay): We are still not conforming to the object count field and i don't know how to
+        //           do that ?! As we don't have the original object count of the first message any
+        //           more we also can't derive it from the data given by the user so now what ?
         let device_data: ServerDeviceInfo = (self.getter)()?;
         //NOTE: This will never change so we can just fix it in place
         //TODO(Kay): CONSTANT
@@ -323,38 +330,60 @@ where
         //FIXME(Kay): We need the Read Device ID Code or we are not conforming to the specification !
         cursor.write_u8(device_data.conformity_level as u8)?;
 
-        if let Some(value) = device_data.next_object_id {
-            cursor.write_u8(0xFF)?;
-            cursor.write_u8(value)?;
+        //NOTE(Kay): Store the next two bytes (MORE_FOLLOWS) in our FrameRecords !
+        let more_follows_indicator = records.push_record(cursor);
+        let more_follows_value = records.push_record(cursor);
+
+        //NOTE(Kay): We adding the object count position into our FrameRecords struct
+        let written_object_count = records.push_record(cursor);
+        let mut remaining_bytes = cursor.remaining();
+
+        let mut id = 0;
+        let mut length = 0;
+        let mut read_cursor: usize = 0;
+
+        let mut message_complete = false;
+        let mut written_objects = 0;
+
+        while remaining_bytes > 0 {
+            if read_cursor == device_data.object_data.len() {
+                message_complete = true;
+                break;
+            }
+
+
+            id = device_data.object_data[read_cursor];
+            read_cursor += 1;
+
+            length = device_data.object_data[read_cursor];
+            read_cursor += 1;
+
+
+            if remaining_bytes < length as usize {
+                break;
+            }
+
+            cursor.write_u8(id)?;
+            cursor.write_u8(length)?;
+
+            cursor.write_bytes(&device_data.object_data[read_cursor..(read_cursor + length as usize)])?;
+            read_cursor += length as usize;
+            written_objects +=  1;
+
+            remaining_bytes = cursor.remaining();
+        }
+
+        if !message_complete {
+            records.fill_record(more_follows_indicator, 0xFF, cursor);
+            records.fill_record(more_follows_value, id, cursor);
         } else {
-            cursor.write_u8(0x00)?;
-            cursor.write_u8(0x00)?;
+            records.fill_record(more_follows_indicator, 0x00, cursor);
+            records.fill_record(more_follows_value, 0x00, cursor);
         }
 
-        for byte in device_data.object_data {
-            cursor.write_u8(*byte)?;
-        }
-
-        //TODO(Kay): This needs to be filled in correctly !
-        /*const SAFETY_MARGIN: u8 = 7;
-        let max = device_data.response_message_count(MAX_ADU_LENGTH as u8 - SAFETY_MARGIN);
-
-        max.serialize(cursor)?;
-
-        let range: Range<usize> = Range {
-            start: device_data.continue_at.unwrap_or_default().into(),
-            end: max.unwrap_or(device_data.storage.len() as u8).into(),
-        };
-
-        cursor.write_u8(device_data.number_objects)?;
-
-        for message in device_data.storage[range].iter() {
-            cursor.write_u8(message.index)?;
-
-            let data = message.get_data();
-            cursor.write_u8(data.len() as u8)?;
-            cursor.write_bytes(data)?;
-        }*/
+        //TODO(Kay): We should not put the id of the object here but the amount of objects written
+        //           into the stream !
+        records.fill_record(written_object_count, written_objects, cursor);
 
         Ok(())
     }
@@ -414,7 +443,7 @@ where
 }
 
 impl Serialize for Option<u8> {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         const CONTINUE_MARKER: u8 = 0xFF;
         const END_MARKER: u8 = 0x00;
         match self {
@@ -432,7 +461,7 @@ impl Serialize for Option<u8> {
 }
 
 impl Serialize for &str {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError> {
+    fn serialize(&self, _: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError> {
         cursor.write_u8(self.len() as u8)?;
         cursor.write_bytes(self.as_bytes())?;
 
@@ -449,7 +478,7 @@ mod tests {
         let range = AddressRange::try_from(3, 512).unwrap();
         let mut buffer = [0u8; 4];
         let mut cursor = WriteCursor::new(&mut buffer);
-        range.serialize(&mut cursor).unwrap();
+        range.serialize(&mut FrameRecords::new(), &mut cursor).unwrap();
         assert_eq!(buffer, [0x00, 0x03, 0x02, 0x00]);
     }
 
@@ -460,14 +489,14 @@ mod tests {
 
         let mut cursor = WriteCursor::new(&mut buffer);
 
-        next_position.serialize(&mut cursor).unwrap();
+        next_position.serialize(&mut FrameRecords::new(), &mut cursor).unwrap();
         assert_eq!(buffer, [0xFF, 0x03]);
 
         let next_position = None;
         let mut buffer = [0u8; 2];
 
         let mut cursor = WriteCursor::new(&mut buffer);
-        next_position.serialize(&mut cursor).unwrap();
+        next_position.serialize(&mut FrameRecords::new(), &mut cursor).unwrap();
         assert_eq!(buffer, [0x00, 0x00]);
     }
 
@@ -477,7 +506,7 @@ mod tests {
         let mut buffer = [0u8; 14];
 
         let mut cursor = WriteCursor::new(&mut buffer);
-        test_str.as_str().serialize(&mut cursor).unwrap();
+        test_str.as_str().serialize(&mut FrameRecords::new(), &mut cursor).unwrap();
 
         let expected: [u8; 14] = [
             0x0D, 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x2C, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x21,

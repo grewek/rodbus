@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use crate::common::phys::PhysLayer;
 use std::ops::Range;
 
@@ -291,6 +292,42 @@ impl FunctionField {
             FunctionField::Exception(x) => x.get_value() | 0x80,
             FunctionField::UnknownFunction(x) => x | 0x80,
         }
+    }
+}
+
+//TODO(Kay): TEST API for me to understand how things should probably work !
+pub(crate) struct FrameRecords {
+    records: HashSet<usize>,
+}
+impl FrameRecords {
+    pub(crate) fn new() -> Self {
+        Self {
+            records: HashSet::new()
+        }
+    }
+
+    //NOTE(Kay): Like:
+    //                  - Simple Api
+    //           Dislike:
+    //                  - Again Clunky to work with
+    //                  - changes on the serialize trait were necessary !
+    //                  - std::hashset :(
+    pub(crate) fn push_record(&mut self, cursor: &mut WriteCursor) -> usize {
+        self.records.insert(cursor.position());
+        let position = cursor.position();
+        cursor.skip(1);
+
+        position
+    }
+
+    pub(crate) fn fill_record(&mut self, recorded_offset: usize, value: u8, cursor: &mut WriteCursor) {
+        if self.records.contains(&recorded_offset) {
+            let old_position = cursor.position();
+            cursor.seek_to(recorded_offset).unwrap();
+            cursor.write_u8(value);
+            cursor.seek_to(old_position).unwrap();
+        }
+        //TODO(Kay): Usage Error tried to write into a position that does not exist !
     }
 }
 

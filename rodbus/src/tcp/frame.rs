@@ -1,5 +1,5 @@
 use crate::common::buffer::ReadBuffer;
-use crate::common::frame::{Frame, FrameHeader, FrameInfo, FrameType, FunctionField, TxId};
+use crate::common::frame::{Frame, FrameHeader, FrameInfo, FrameRecords, FrameType, FunctionField, TxId};
 use crate::common::traits::Serialize;
 use crate::decode::FrameDecodeLevel;
 use crate::error::{FrameParseError, RequestError};
@@ -145,7 +145,7 @@ pub(crate) fn format_mbap(
     let start_pdu = cursor.position();
     cursor.write_u8(function.get_value())?;
     let start_pdu_body = cursor.position();
-    msg.serialize(cursor)?;
+    msg.serialize(&mut FrameRecords::new(), cursor)?;
     let end_pdu = cursor.position();
 
     // the length field includes the unit identifier

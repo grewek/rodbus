@@ -3,9 +3,15 @@ use crate::error::*;
 use crate::ExceptionCode;
 
 use scursor::{ReadCursor, WriteCursor};
+use crate::common::frame::FrameRecords;
 
 pub(crate) trait Serialize {
-    fn serialize(&self, cursor: &mut WriteCursor) -> Result<(), RequestError>;
+    //TODO(Kay): In order to use the FrameRecords API it was necessary to add a records argument
+    //           to the serialize trait. As it needs access to the WriteCursor and this was the
+    //           most simple way to get access to it ! Again i don't think this is necessarily
+    //           a good API it's more of a "how it could work" approach and not a "how it should
+    //           should work" approach.
+    fn serialize(&self, records: &mut FrameRecords, cursor: &mut WriteCursor) -> Result<(), RequestError>;
 }
 
 pub(crate) trait Loggable {
