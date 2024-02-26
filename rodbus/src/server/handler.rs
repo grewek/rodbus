@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
+use std::todo;
 
 use crate::exception::ExceptionCode;
 use crate::server::{WriteCoils, WriteRegisters};
@@ -60,18 +61,6 @@ pub trait RequestHandler: Send + 'static {
         Err(ExceptionCode::IllegalFunction)
     }
 
-    /// TODO - Rework this to return ServerDeviceInfo<'a>
-    ///
-    /// Read device information
-    fn read_device_info(
-        &self,
-        _mei_code: MeiCode,
-        _read_dev_id: ReadDeviceCode,
-        _object_id: Option<u8>,
-    ) -> Result<ServerDeviceInfo, ExceptionCode> {
-        Err(ExceptionCode::IllegalFunction)
-    }
-
     /// Read single input register or return an ExceptionCode
     fn read_input_register(&self, _address: u16) -> Result<u16, ExceptionCode> {
         Err(ExceptionCode::IllegalFunction)
@@ -94,6 +83,30 @@ pub trait RequestHandler: Send + 'static {
 
     /// Write multiple registers
     fn write_multiple_registers(&mut self, _values: WriteRegisters) -> Result<(), ExceptionCode> {
+        Err(ExceptionCode::IllegalFunction)
+    }
+
+    ///Access Basic Device Information in Streaming Mode
+    fn read_device_info_basic_streaming(
+        &self,
+        read_dev_id: ReadDeviceCode,
+        object_id: Option<u8>,
+    ) -> Result<ServerDeviceInfo, ExceptionCode> {
+        Err(ExceptionCode::IllegalFunction)
+    }
+
+    ///Access Regular Device Information in Streaming Mode
+    fn read_device_info_regular_streaming(&self, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Result<ServerDeviceInfo, ExceptionCode> {
+        Err(ExceptionCode::IllegalFunction)
+    }
+
+    ///Access Extended Device Information in Streaming Mode
+    fn read_device_info_extended_streaming(&self, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Result<ServerDeviceInfo, ExceptionCode> {
+        Err(ExceptionCode::IllegalFunction)
+    }
+
+    ///Access Individual Device Information
+    fn read_device_info_individual(&self, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Result<ServerDeviceInfo, ExceptionCode> {
         Err(ExceptionCode::IllegalFunction)
     }
 }
@@ -261,17 +274,25 @@ pub trait AuthorizationHandler: Send + Sync + 'static {
         Authorization::Deny
     }
 
-    /// Authorize a read device request
-    fn read_device_info(
+    /// Authorize a read device request basic streaming
+    fn read_device_info_basic_streaming(
         &self,
         _unit_id: UnitId,
         _role: &str,
-        _mei_code: MeiCode,
         _read_dev_id: ReadDeviceCode,
         _object_id: Option<u8>,
     ) -> Authorization {
         Authorization::Allow
     }
+
+    /// Authorize a read device request regular streaming
+    fn read_device_info_regular_streaming(&self, _unit_id: UnitId, _role: &str, _read_dev_id: ReadDeviceCode, _object_id: Option<u8>) -> Authorization { Authorization::Allow }
+
+    /// Authorize a read device request extended streaming
+    fn read_device_info_extended_streaming(&self, _unit_id: UnitId, _role: &str, _read_dev_id: ReadDeviceCode, _object_id: Option<u8>) -> Authorization { Authorization::Allow }
+
+    /// Authorize a read device request individual
+    fn read_device_info_individual(&self, _unit_id: UnitId, _role: &str, _read_dev_id: ReadDeviceCode, _object_id: Option<u8>) -> Authorization { Authorization::Allow }
 }
 
 /// Read-only authorization handler that blindly accepts
@@ -352,14 +373,25 @@ impl AuthorizationHandler for ReadOnlyAuthorizationHandler {
     }
 
     /// Authorize Read Device Info request
-    fn read_device_info(
+    fn read_device_info_basic_streaming(
         &self,
         _unit_id: UnitId,
         _role: &str,
-        _mei_code: MeiCode,
         _read_dev_id: ReadDeviceCode,
         _object_id: Option<u8>,
     ) -> Authorization {
+        Authorization::Allow
+    }
+
+    fn read_device_info_regular_streaming(&self, _unit_id: UnitId, _role: &str, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Authorization {
+        Authorization::Allow
+    }
+
+    fn read_device_info_extended_streaming(&self, _unit_id: UnitId, _role: &str, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Authorization {
+        Authorization::Allow
+    }
+
+    fn read_device_info_individual(&self, _unit_id: UnitId, _role: &str, read_dev_id: ReadDeviceCode, object_id: Option<u8>) -> Authorization {
         Authorization::Allow
     }
 
