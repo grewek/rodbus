@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::net::{IpAddr, Ipv4Addr};
 use std::process::exit;
+use std::str::from_utf8;
 use std::time::Duration;
 
 use tokio_stream::StreamExt;
@@ -219,7 +220,6 @@ async fn run_channel(mut channel: Channel) -> Result<(), Box<dyn std::error::Err
                     println!("{:?}", info);
                 }
 
-
                 //TODO(Kay): The usage of this api feels very clunky but i don't know how to write a good one so experimenting is probably a good idea ?
                 let keys = channel
                     .read_device_identification(
@@ -230,6 +230,29 @@ async fn run_channel(mut channel: Channel) -> Result<(), Box<dyn std::error::Err
 
                 for info in keys.storage.into_iter() {
                     println!("{:?}", info);
+                }
+
+                let keys = channel
+                    .read_device_identification(
+                        params,
+                        ReadDeviceRequest::new(ReadDeviceCode::ExtendedStreaming, None),
+                    )
+                    .await?;
+
+                for info in keys.storage.into_iter() {
+                    match info {
+                        InfoObject::DefinedString(_,_) => unreachable!(),
+                        InfoObject::Other(_, data) => println!("{:?}", from_utf8(data.as_slice())),
+                    }
+                }
+
+                let keys = channel.read_device_identification(params, ReadDeviceRequest::new(ReadDeviceCode::ExtendedStreaming, Some(keys.continue_at.unwrap()))).await?;
+
+                for info in keys.storage.into_iter() {
+                    match info {
+                        InfoObject::DefinedString(_,_) => unreachable!(),
+                        InfoObject::Other(_, data) => println!("{:?}", from_utf8(data.as_slice())),
+                    }
                 }
 
                 /*for key in keys.finalize_and_retrieve_objects() {
