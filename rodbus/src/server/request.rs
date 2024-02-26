@@ -138,9 +138,17 @@ impl<'a> Request<'a> {
                 //  - Number of Objects
                 //
                 // And then write them AFTER writing the info objects
-                let device_information = DeviceIdentificationResponse::new(|| {
-                    handler.read_device_info(read.mei_code, read.dev_id, read.obj_id)
+
+                //Get the Answer from the correct sub handler
+                let device_information = DeviceIdentificationResponse::new( || {
+                    match read.dev_id {
+                        ReadDeviceCode::BasicStreaming => handler.read_device_info_basic_streaming(read.dev_id, read.obj_id),
+                        ReadDeviceCode::RegularStreaming => handler.read_device_info_regular_streaming(read.dev_id, read.obj_id),
+                        ReadDeviceCode::ExtendedStreaming => handler.read_device_info_extended_streaming(read.dev_id, read.obj_id),
+                        ReadDeviceCode::Specific => handler.read_device_info_individual(read.dev_id, read.obj_id),
+                    }
                 });
+
                 writer.format_reply(header, function, &device_information, level)
             }
             Request::WriteSingleCoil(request) => {
